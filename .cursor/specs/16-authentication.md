@@ -1,0 +1,388 @@
+# Peña Zos — Authentication Specification
+
+**Version:** 0.1  
+**Status:** Draft
+
+**Related Documents:**
+- 00-product.md
+- 01-users-and-roles.md
+- 15-firestore-data-model.md
+
+---
+
+# 1. Overview
+
+The application uses Firebase Authentication to manage user access.
+
+Authentication is separated from application data.
+
+Firebase Authentication manages:
+
+- User credentials.
+- Login process.
+- Password recovery.
+- User sessions.
+
+Firestore manages:
+
+- User profile.
+- Roles.
+- Permissions.
+- Member information.
+
+---
+
+# 2. Authentication Method
+
+The MVP uses:
+
+- Email and password authentication.
+
+No external authentication providers are required.
+
+Supported login:
+
+- Email.
+- Password.
+
+---
+
+# 3. User Creation Process
+
+Users are not allowed to register themselves.
+
+All users are created by application administrators through the initial import process.
+
+The initial source of users is the Peña Zos Excel file.
+
+The creation process creates:
+
+- Firebase Authentication user.
+- Firestore user document.
+
+---
+
+# 4. Initial Excel Import
+
+The Excel file contains:
+
+- Name.
+- Surname.
+- Email.
+- Phone.
+- Roles.
+
+Example:
+
+Name:
+Juan
+
+Surname:
+Pérez
+
+Email:
+juan@example.com
+
+Roles:
+- MEMBER
+- BOARD
+
+---
+
+# 5. Firebase Authentication User
+
+Firebase Authentication stores only authentication information.
+
+Stored information:
+
+- Firebase UID.
+- Email.
+- Password credentials managed by Firebase.
+
+The password is never stored in Firestore.
+
+The Firebase UID is the unique identifier used to link authentication with application data.
+
+---
+
+# 6. Firestore User Document
+
+After creating the Firebase Authentication user, the application creates the user document.
+
+Path:
+
+users/{uid}
+
+Stored information:
+
+- Name.
+- Surname.
+- Email.
+- Phone.
+- Roles.
+- Active status.
+- Password change status.
+- Creation date.
+- Update date.
+
+Example:
+
+User:
+
+Juan Pérez
+
+Roles:
+
+- MEMBER
+- BOARD
+
+---
+
+# 7. Initial Password
+
+When users are imported:
+
+- A temporary password is generated.
+- The user receives access information by email.
+- The user receives a WhatsApp notification informing that the application is available.
+
+The temporary password must not be stored in Firestore.
+
+---
+
+# 8. First Login
+
+After the first successful login, the application checks if the user must change the password.
+
+The field:
+
+mustChangePassword
+
+is used for this purpose.
+
+If:
+
+mustChangePassword = true
+
+The user must change the password before accessing the application.
+
+Flow:
+
+Login
+
+↓
+
+Validate credentials
+
+↓
+
+Load user profile
+
+↓
+
+Check password change requirement
+
+↓
+
+Force password change
+
+↓
+
+Access application
+
+---
+
+# 9. Password Change
+
+Users can change their password from the application.
+
+Requirements:
+
+- New password.
+- Password confirmation.
+
+After successful password change:
+
+mustChangePassword = false
+
+The user can continue using the application normally.
+
+---
+
+# 10. Password Recovery
+
+Users can recover access using Firebase password recovery.
+
+Process:
+
+User enters email
+
+↓
+
+Firebase sends recovery email
+
+↓
+
+User changes password
+
+↓
+
+User accesses application
+
+---
+
+# 11. Login Process
+
+Application login flow:
+
+1. User opens the application.
+2. User enters email and password.
+3. Firebase Authentication validates credentials.
+4. Application receives Firebase UID.
+5. Application loads Firestore user information.
+6. Application loads user roles.
+7. Application applies permissions.
+8. User accesses available features.
+
+---
+
+# 12. User Status
+
+Users have an active status.
+
+Field:
+
+active
+
+Possible values:
+
+- true.
+- false.
+
+Inactive users cannot access the application.
+
+---
+
+# 13. Role Loading
+
+After authentication, the application loads the roles stored in the user document.
+
+A user can have multiple roles.
+
+Example:
+
+User:
+
+Juan Pérez
+
+Roles:
+
+- MEMBER.
+- BOARD.
+
+Roles determine which sections and actions are available.
+
+---
+
+# 14. Authentication Permissions
+
+Authentication only validates the identity of the user.
+
+Authorization is managed through roles.
+
+Available roles:
+
+- MEMBER.
+- BOARD.
+- TREASURER.
+- ADMIN.
+
+---
+
+# 15. Security Rules Principles
+
+Firestore security rules must validate:
+
+- The user is authenticated.
+- The user profile exists.
+- The user has the required role.
+
+Examples:
+
+MEMBER:
+
+- Can access allowed member information.
+- Can access personal information.
+
+BOARD:
+
+- Can manage operational information.
+
+TREASURER:
+
+- Can manage financial information.
+
+ADMIN:
+
+- Can manage technical configuration.
+
+---
+
+# 16. Logout
+
+Users can logout from the application.
+
+Logout:
+
+- Ends Firebase Authentication session.
+- Returns the user to the login screen.
+
+---
+
+# 17. Session Management
+
+The application uses Firebase Authentication session management.
+
+The MVP does not require:
+
+- Custom sessions.
+- Manual JWT management.
+- Custom token storage.
+
+---
+
+# 18. User Import Security
+
+Only users with ADMIN role can execute user imports.
+
+The import process must validate:
+
+- Email uniqueness.
+- Required fields.
+- Valid roles.
+- Correct user data.
+
+---
+
+# 19. Validation Rules
+
+The application must validate:
+
+- Email is required.
+- Email must be unique.
+- Users must have at least one role.
+- Inactive users cannot login.
+- Users without a Firestore profile cannot access protected areas.
+
+---
+
+# 20. Future Improvements
+
+Possible future improvements:
+
+- Two-factor authentication.
+- Automatic user synchronization.
+- QR based access.
+- Advanced account management.
+
+These are out of scope for the MVP.
