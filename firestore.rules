@@ -79,9 +79,17 @@ service cloud.firestore {
     // ---------- users/{userId} ----------
     // Technical account only: firebaseUid, memberId, email, mustChangePassword.
 
+    function isOwnCompletingPasswordChange(userId) {
+      return isSignedIn() && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mustChangePassword'])
+        && resource.data.mustChangePassword == true
+        && request.resource.data.mustChangePassword == false;
+    }
+
     match /users/{userId} {
       allow read: if isSignedIn() && request.auth.uid == userId;
-      allow write: if isAdmin();
+      allow update: if isAdmin() || isOwnCompletingPasswordChange(userId);
+      allow create, delete: if isAdmin();
     }
 
     // ---------- members/{memberId} ----------

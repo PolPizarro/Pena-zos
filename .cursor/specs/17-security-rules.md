@@ -111,11 +111,12 @@ users/{userId}
 Allowed:
 
 - Read own user document (`userId == request.auth.uid`).
+- Set own `mustChangePassword` from `true` to `false` (and only that field), as part of the first-login password change flow (16-authentication.md §9).
 
 Not allowed:
 
 - Read other users' documents.
-- Modify own document.
+- Modify any other field of own document.
 - Modify other users' documents.
 
 ---
