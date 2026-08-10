@@ -1,56 +1,33 @@
-import { useState } from 'react'
-import type { MemberRole } from './auth/types'
+import type { ReactNode } from 'react'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { Layout } from './app/Layout'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import { ChangePasswordPage } from './auth/ChangePasswordPage'
 import { LoginPage } from './auth/LoginPage'
 import { logout } from './auth/authService'
+import type { Member, MemberRole } from './auth/types'
 import { ImportMembersPage } from './members/ImportMembersPage'
 import { MembersListPage } from './members/MembersListPage'
+import { ProfilePage } from './members/ProfilePage'
 import { SeasonsPage } from './seasons/SeasonsPage'
 
-// Temporary view switcher. Replaced by real routing in Phase 5
-// (19-ui-navigation.md), once more than a couple of screens exist.
-type View = 'home' | 'import-members' | 'members' | 'seasons'
-
-function canManageMembers(roles: MemberRole[]) {
-  return roles.includes('BOARD') || roles.includes('TREASURER') || roles.includes('ADMIN')
-}
-
-function canManageSeasons(roles: MemberRole[]) {
-  return roles.includes('BOARD') || roles.includes('ADMIN')
-}
-
-function Home({ fullName, roles, onNavigate }: { fullName: string; roles: MemberRole[]; onNavigate: (view: View) => void }) {
+function HomePage({ member }: { member: Member }) {
   return (
     <main>
       <h1>Peña Zos</h1>
-      <p>Bienvenido, {fullName}.</p>
-      <p>Roles: {roles.join(', ')}</p>
-      {canManageSeasons(roles) && (
-        <button type="button" onClick={() => onNavigate('seasons')}>
-          Temporadas
-        </button>
-      )}
-      {canManageMembers(roles) && (
-        <button type="button" onClick={() => onNavigate('members')}>
-          Miembros
-        </button>
-      )}
-      {roles.includes('ADMIN') && (
-        <button type="button" onClick={() => onNavigate('import-members')}>
-          Importar miembros
-        </button>
-      )}
-      <button type="button" onClick={() => logout()}>
-        Cerrar sesión
-      </button>
+      <p>Bienvenido, {member.fullName}.</p>
+      <p>Roles: {member.roles.join(', ')}</p>
     </main>
   )
 }
 
-function AppContent() {
+function RequireRole({ roles, member, children }: { roles: MemberRole[]; member: Member; children: ReactNode }) {
+  const allowed = roles.some((role) => member.roles.includes(role))
+  return allowed ? <>{children}</> : <Navigate to="/" replace />
+}
+
+function AuthGate() {
   const { firebaseUser, userDoc, member, loading } = useAuth()
-  const [view, setView] = useState<View>('home')
 
   if (loading) {
     return <p>Cargando...</p>
@@ -75,46 +52,47 @@ function AppContent() {
     )
   }
 
-  if (view === 'import-members' && member.roles.includes('ADMIN')) {
-    return (
-      <>
-        <button type="button" onClick={() => setView('home')}>
-          ← Volver
-        </button>
-        <ImportMembersPage />
-      </>
-    )
-  }
-
-  if (view === 'members' && canManageMembers(member.roles)) {
-    return (
-      <>
-        <button type="button" onClick={() => setView('home')}>
-          ← Volver
-        </button>
-        <MembersListPage />
-      </>
-    )
-  }
-
-  if (view === 'seasons' && canManageSeasons(member.roles)) {
-    return (
-      <>
-        <button type="button" onClick={() => setView('home')}>
-          ← Volver
-        </button>
-        <SeasonsPage />
-      </>
-    )
-  }
-
-  return <Home fullName={member.fullName} roles={member.roles} onNavigate={setView} />
+  return (
+    <Routes>
+      <Route element={<Layout member={member} />}>
+        <Route path="/" element={<HomePage member={member} />} />
+        <Route path="/profile" element={<ProfilePage member={member} />} />
+        <Route
+          path="/seasons"
+          element={
+            <RequireRole roles={['BOARD', 'ADMIN']} member={member}>
+              <SeasonsPage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/members"
+          element={
+            <RequireRole roles={['BOARD', 'TREASURER', 'ADMIN']} member={member}>
+              <MembersListPage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/members/import"
+          element={
+            <RequireRole roles={['ADMIN']} member={member}>
+              <ImportMembersPage />
+            </RequireRole>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
+  )
 }
 
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <BrowserRouter>
+        <AuthGate />
+      </BrowserRouter>
     </AuthProvider>
   )
 }
