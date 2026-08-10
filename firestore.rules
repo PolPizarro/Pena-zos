@@ -1,0 +1,215 @@
+rules_version = '2';
+
+// Implements 17-security-rules.md.
+//
+// Scope: these rules enforce authentication + role-based access control and
+// resource ownership. Complex business validation (e.g. "a product must be
+// active to receive orders") belongs in the service layer per
+// 02-data-model.md §25 and 18-application-architecture.md §7, not here.
+//
+// Convention: member-owned subcollection documents (dinner attendance, task
+// assignments, activity registrations, poll votes) use the member's id as
+// the document id. This gives "one per member" uniqueness for free and lets
+// ownership be checked from the path instead of reading the document first.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Helpers ----------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function myUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function myMemberId() {
+      return myUser().memberId;
+    }
+
+    function myMember() {
+      return get(/databases/$(database)/documents/members/$(myMemberId())).data;
+    }
+
+    function hasRole(role) {
+      return isSignedIn() && role in myMember().roles;
+    }
+
+    function isBoard() {
+      return hasRole('BOARD');
+    }
+
+    function isTreasurer() {
+      return hasRole('TREASURER');
+    }
+
+    function isAdmin() {
+      return hasRole('ADMIN');
+    }
+
+    function isActiveMember() {
+      return isSignedIn() && myMember().status == 'ACTIVE';
+    }
+
+    function isOwnMember(memberId) {
+      return isSignedIn() && myMemberId() == memberId;
+    }
+
+    // Per-role self-management (01-users-and-roles.md §7.1): a member
+    // holding role X may grant/revoke role X on another member, touching
+    // only the `roles` field. ADMIN is handled separately (full access).
+    function onlyRolesFieldChanged() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['roles']);
+    }
+
+    function changedRoles() {
+      return request.resource.data.roles.toSet().difference(resource.data.roles.toSet())
+        .union(resource.data.roles.toSet().difference(request.resource.data.roles.toSet()));
+    }
+
+    function canSelfManageRoleChange() {
+      return isSignedIn()
+        && onlyRolesFieldChanged()
+        && changedRoles().size() > 0
+        && changedRoles().difference(myMember().roles.toSet()).size() == 0;
+    }
+
+    // ---------- users/{userId} ----------
+    // Technical account only: firebaseUid, memberId, email, mustChangePassword.
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow write: if isAdmin();
+    }
+
+    // ---------- members/{memberId} ----------
+    // Business identity: fullName, email, phone, dni, roles[], status.
+
+    match /members/{memberId} {
+      allow read: if isOwnMember(memberId) || isBoard() || isTreasurer() || isAdmin();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || canSelfManageRoleChange();
+    }
+
+    // ---------- seasons/{seasonId} ----------
+
+    match /seasons/{seasonId} {
+      allow read: if isActiveMember();
+      allow create, update: if isBoard() || isAdmin();
+      allow delete: if false;
+
+      // ---- dinners ----
+      match /dinners/{dinnerId} {
+        allow read: if isActiveMember();
+        allow create, update: if isBoard() || isAdmin();
+        allow delete: if false;
+
+        // doc id == memberId
+        match /attendees/{memberId} {
+          allow read: if isBoard() || isAdmin() || isOwnMember(memberId);
+          allow create, update: if isBoard() || isAdmin() || isOwnMember(memberId);
+          allow delete: if false;
+        }
+      }
+
+      // ---- tasks ----
+      match /tasks/{taskId} {
+        allow read: if isActiveMember();
+        allow create, update: if isBoard() || isAdmin();
+        allow delete: if false;
+
+        // doc id == memberId. Members never write their own assignments —
+        // only the board assigns tasks.
+        match /assignments/{memberId} {
+          allow read: if isBoard() || isAdmin() || isOwnMember(memberId);
+          allow write: if isBoard() || isAdmin();
+        }
+      }
+
+      // ---- activities ----
+      match /activities/{activityId} {
+        allow read: if isActiveMember();
+        allow create, update: if isBoard() || isAdmin();
+        allow delete: if false;
+
+        // doc id == memberId
+        match /registrations/{memberId} {
+          allow read: if isBoard() || isAdmin() || isOwnMember(memberId);
+          allow create, update: if isBoard() || isAdmin() || isOwnMember(memberId);
+          allow delete: if false;
+        }
+      }
+
+      // ---- events ----
+      match /events/{eventId} {
+        allow read: if isActiveMember();
+        allow create, update: if isBoard() || isAdmin();
+        allow delete: if false;
+      }
+
+      // ---- polls ----
+      match /polls/{pollId} {
+        allow read: if isActiveMember();
+        allow create, update: if isBoard() || isAdmin();
+        allow delete: if false;
+
+        // doc id == memberId. Members can only vote while the poll is
+        // PUBLISHED, and cannot read each other's votes (08-polls.md §9).
+        match /votes/{memberId} {
+          allow read: if isBoard() || isAdmin() || isOwnMember(memberId);
+          allow create, update: if (isBoard() || isAdmin())
+            || (isOwnMember(memberId)
+                && get(/databases/$(database)/documents/seasons/$(seasonId)/polls/$(pollId)).data.status == 'PUBLISHED');
+          allow delete: if false;
+        }
+      }
+
+      // ---- products ----
+      match /products/{productId} {
+        allow read: if isActiveMember();
+        allow create, update: if isBoard() || isAdmin();
+        allow delete: if false;
+      }
+
+      // ---- orders ----
+      // Members can create their own orders and modify them only while
+      // paymentStatus is PENDING (17-security-rules.md §13). Treasurer
+      // access is deferred with Finances (10-orders.md §10).
+      match /orders/{orderId} {
+        allow read: if isBoard() || isAdmin() || (isActiveMember() && resource.data.memberId == myMemberId());
+        allow create: if isActiveMember() && request.resource.data.memberId == myMemberId();
+        allow update: if (isBoard() || isAdmin())
+          || (isActiveMember()
+              && resource.data.memberId == myMemberId()
+              && request.resource.data.memberId == myMemberId()
+              && resource.data.paymentStatus == 'PENDING');
+        allow delete: if false;
+      }
+
+      // ---- deliveries ----
+      // doc id == memberId (one delivery package per member, 11-deliveries.md §3).
+      match /deliveries/{memberId} {
+        allow read: if isBoard() || isAdmin() || isOwnMember(memberId);
+        allow create, update: if isBoard() || isAdmin();
+        allow delete: if false;
+
+        match /items/{itemId} {
+          allow read: if isBoard() || isAdmin() || isOwnMember(memberId);
+          allow write: if isBoard() || isAdmin();
+        }
+      }
+
+      // ---- inventory ----
+      // No member access at all, per 09-inventory.md §11-12.
+      match /inventory/{itemId} {
+        allow read, write: if isBoard() || isAdmin();
+      }
+
+      // ---- finances ----
+      // Intentionally not implemented: Future / Post-MVP per 13-finances.md
+      // and 17-security-rules.md §16. No match block means default deny.
+    }
+  }
+}

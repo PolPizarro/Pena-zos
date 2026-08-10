@@ -202,12 +202,15 @@ Member
     fullName
     email
     phone
+    dni
     roles[]
     status
     createdAt
     updatedAt
 }
 ```
+
+`dni` is required and unique. It is the key used to match members on Excel re-import (01-users-and-roles.md §5), not the email.
 
 ---
 
@@ -246,6 +249,7 @@ PENDING_ACCESS
 - Members must preserve historical information.
 - Inactive members must not be deleted.
 - Roles belong to Members.
+- A member holding a given role may grant or revoke that same role for other members; `ADMIN` may grant or revoke any role. See 01-users-and-roles.md §7.1.
 
 ---
 
@@ -561,6 +565,8 @@ Poll
 ```
 
 `type` determines whether the poll is `SINGLE_CHOICE` or `MULTIPLE_CHOICE`, as defined in 08-polls.md.
+
+`status` is `DRAFT`, `PUBLISHED`, `CLOSED`, or `CANCELLED`, as defined in 08-polls.md §2a.
 
 ---
 

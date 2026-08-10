@@ -54,6 +54,21 @@ A poll may also be cancelled.
 
 ---
 
+# 2a. Poll Status
+
+Possible values:
+
+```text id="p0l1st"
+DRAFT
+PUBLISHED
+CLOSED
+CANCELLED
+```
+
+`DRAFT` corresponds to "Created" above. Voting is open exactly while `status = PUBLISHED` and the current date is within `startDate`/`endDate`. The board can also close voting early by setting `status = CLOSED` (see §10).
+
+---
+
 # 3. Poll Entity
 
 A poll belongs to a specific Season.

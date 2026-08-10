@@ -98,6 +98,8 @@ BOARD + ADMIN:
 
 # 6. Users Collection Rules
 
+This collection stores the technical account only (`firebaseUid`, `memberId`, `email`, `mustChangePassword`). It never stores roles, name, phone, or status — see 02-data-model.md and 16-authentication.md.
+
 Path:
 
 users/{userId}
@@ -108,33 +110,25 @@ users/{userId}
 
 Allowed:
 
-- Read own user profile.
+- Read own user document (`userId == request.auth.uid`).
 
 Not allowed:
 
-- Modify own roles.
-- Modify own permissions.
-- Modify other users.
+- Read other users' documents.
+- Modify own document.
+- Modify other users' documents.
 
 ---
 
 ## BOARD
 
-Allowed:
-
-- Read member information required for operations.
-
-Not allowed:
-
-- Modify user roles.
+No access beyond the MEMBER rule above. Board members do not need to read other users' technical account documents; operational information about people comes from the `members` collection (§6a).
 
 ---
 
 ## TREASURER
 
-Allowed:
-
-- Read member information required for payments.
+No access beyond the MEMBER rule above.
 
 ---
 
@@ -143,9 +137,70 @@ Allowed:
 Allowed:
 
 - Create users.
-- Update users.
+- Update users (including `mustChangePassword`).
 - Import users.
-- Manage roles.
+
+---
+
+# 6a. Members Collection Rules
+
+This collection stores the business identity: `fullName`, `email`, `phone`, `dni`, `roles[]`, `status`. See 02-data-model.md and 15-firestore-data-model.md.
+
+Path:
+
+members/{memberId}
+
+Role assignment follows 01-users-and-roles.md §7.1: a member holding role X may grant or revoke role X for other members, by writing only the `roles` field. `ADMIN` may write `roles` for any role. No role holder other than `ADMIN` may change any other field (`fullName`, `email`, `dni`, `status`).
+
+---
+
+## MEMBER
+
+Allowed:
+
+- Read own member document (resolved via `users/{request.auth.uid}.memberId == memberId`).
+
+Not allowed:
+
+- Read other members' documents.
+- Modify own or other members' documents.
+
+---
+
+## BOARD
+
+Allowed:
+
+- Read all member documents (needed for operations: task assignment, dinner rosters, order management).
+- Grant or revoke the `BOARD` role on another member's document (`roles` field only).
+
+Not allowed:
+
+- Grant or revoke `TREASURER` or `ADMIN`.
+- Modify `status` or any field other than `roles`.
+- Create or delete members.
+
+---
+
+## TREASURER
+
+Allowed:
+
+- Read all member documents (needed for payment-related work).
+- Grant or revoke the `TREASURER` role on another member's document (`roles` field only).
+
+Not allowed:
+
+- Grant or revoke `BOARD` or `ADMIN`.
+- Modify `status` or any field other than `roles`.
+
+---
+
+## ADMIN
+
+Allowed:
+
+- Full access, including creating members, importing members, and granting/revoking any role regardless of which roles the ADMIN holds.
 
 ---
 

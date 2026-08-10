@@ -146,11 +146,14 @@ Member:
 fullName
 email
 phone
+dni
 roles[]
 status
 createdAt
 updatedAt
 }
+
+`dni` is required and unique; it is the import matching key (01-users-and-roles.md §5).
 
 ---
 
@@ -189,6 +192,7 @@ Possible values:
 - Members must not be physically deleted.
 - Historical information must remain valid.
 - Roles belong to Members, not Users.
+- A member holding a given role may write `roles` to grant/revoke that same role on another member's document; `ADMIN` may write `roles` for any role. No other field may be changed this way. See 01-users-and-roles.md §7.1 and 17-security-rules.md §6a.
 
 ---
 
@@ -457,6 +461,8 @@ updatedAt
 }
 
 `type` is `SINGLE_CHOICE` or `MULTIPLE_CHOICE`, as defined in 08-polls.md.
+
+`status` is `DRAFT`, `PUBLISHED`, `CLOSED`, or `CANCELLED`, as defined in 08-polls.md §2a.
 
 ---
 

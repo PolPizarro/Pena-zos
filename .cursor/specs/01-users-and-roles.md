@@ -117,17 +117,21 @@ Administrators can import members from an Excel file.
 
 The import process creates or updates members.
 
-The import file may contain:
+The import file contains, per row:
 
-* Full name.
+* Nombre (first name).
+* Apellidos (surname).
 * Email address.
+* DNI (national ID).
 * Roles.
-* Active status.
-* Additional member information.
+
+`Nombre` and `Apellidos` are combined into the Member's single `fullName` field on import (see 02-data-model.md). The Excel keeps them as two columns only because that is how the source spreadsheet is filled in.
+
+`DNI` is required and unique. It is the key used to match a row to an existing Member on re-import — not the email — since the DNI does not change while the email might.
 
 The import process must:
 
-* Avoid duplicate members.
+* Avoid duplicate members (match by DNI).
 * Update existing members when possible.
 * Preserve historical references.
 * Not delete members automatically.
@@ -177,6 +181,17 @@ Member:
 ```
 
 The absence of a role means the user does not have that permission set.
+
+---
+
+## 7.1 Role Assignment
+
+Role assignment is per-role, not centralized:
+
+* A member holding a given role may grant or revoke **that same role** for other members (e.g., a BOARD member can add or remove the BOARD role from someone else, but cannot touch TREASURER or ADMIN unless they also hold those roles).
+* `ADMIN` additionally keeps the ability to grant or revoke **any** role, on top of the rule above.
+* Granting/revoking a role only changes the `roles` field. It does not grant access to change a member's other information (name, email, DNI, `status`) — that remains ADMIN-only (§11).
+* The initial roles for a season come from the Excel import (§5), performed by an ADMIN.
 
 ---
 
@@ -297,10 +312,12 @@ Allowed:
 
 * View members.
 * Search members.
+* Grant or revoke the `BOARD` role for other members (§7.1).
 
 Not allowed:
 
-* Manage roles.
+* Grant or revoke `TREASURER` or `ADMIN` (unless also holding that role).
+* Modify a member's other information (name, email, DNI, status).
 * Create administrators.
 
 ---
@@ -392,11 +409,11 @@ Allowed:
 
 # 10. TREASURER Role
 
-The TREASURER role is reserved for future financial functionality.
+The TREASURER role is reserved for future financial functionality (Future / Post-MVP, see 13-finances.md).
 
-Initially:
+Initially, the only additional permission is:
 
-* No additional permissions are required.
+* Grant or revoke the `TREASURER` role for other members (§7.1).
 
 Future permissions may include:
 
@@ -434,7 +451,8 @@ Allowed:
 
 * Create and deactivate access.
 * Link users and members.
-* Manage roles.
+* Grant or revoke any role for any member (§7.1), independently of which roles the ADMIN holds.
+* Modify a member's other information (name, email, DNI, status).
 * Import members.
 
 ---
@@ -542,6 +560,7 @@ Member
     id
     fullName
     email
+    dni
     roles[]
     status
     createdAt

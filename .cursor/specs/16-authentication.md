@@ -68,33 +68,35 @@ The `User` document never duplicates information already stored on the `Member` 
 
 # 4. Initial Excel Import
 
-The Excel file contains:
+The Excel file contains, per row:
 
-- Full name.
+- Nombre (first name).
+- Apellidos (surname).
 - Email.
-- Phone.
+- DNI (national ID).
 - Roles.
-- Active status.
+
+`Nombre` and `Apellidos` are combined into `fullName` on import. `DNI` is required, unique, and is the key used to match rows on re-import (not the email) — see 01-users-and-roles.md §5.
 
 Example:
 
-Full name:
-Juan Pérez
+Nombre:
+Juan
+
+Apellidos:
+Pérez
 
 Email:
 juan@example.com
 
-Phone:
-600000000
+DNI:
+12345678A
 
 Roles:
 - MEMBER
 - BOARD
 
-Active status:
-ACTIVE
-
-This information is stored on the `Member` document, not on the `User` document.
+This information is stored on the `Member` document, not on the `User` document. `status` defaults to `PENDING_ACCESS` until the account is created (§5).
 
 ---
 
