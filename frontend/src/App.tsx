@@ -1,18 +1,23 @@
 import { useState } from 'react'
+import type { MemberRole } from './auth/types'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import { ChangePasswordPage } from './auth/ChangePasswordPage'
 import { LoginPage } from './auth/LoginPage'
 import { logout } from './auth/authService'
 import { ImportMembersPage } from './members/ImportMembersPage'
 import { MembersListPage } from './members/MembersListPage'
-import type { MemberRole } from './auth/types'
+import { SeasonsPage } from './seasons/SeasonsPage'
 
 // Temporary view switcher. Replaced by real routing in Phase 5
 // (19-ui-navigation.md), once more than a couple of screens exist.
-type View = 'home' | 'import-members' | 'members'
+type View = 'home' | 'import-members' | 'members' | 'seasons'
 
 function canManageMembers(roles: MemberRole[]) {
   return roles.includes('BOARD') || roles.includes('TREASURER') || roles.includes('ADMIN')
+}
+
+function canManageSeasons(roles: MemberRole[]) {
+  return roles.includes('BOARD') || roles.includes('ADMIN')
 }
 
 function Home({ fullName, roles, onNavigate }: { fullName: string; roles: MemberRole[]; onNavigate: (view: View) => void }) {
@@ -21,6 +26,11 @@ function Home({ fullName, roles, onNavigate }: { fullName: string; roles: Member
       <h1>Peña Zos</h1>
       <p>Bienvenido, {fullName}.</p>
       <p>Roles: {roles.join(', ')}</p>
+      {canManageSeasons(roles) && (
+        <button type="button" onClick={() => onNavigate('seasons')}>
+          Temporadas
+        </button>
+      )}
       {canManageMembers(roles) && (
         <button type="button" onClick={() => onNavigate('members')}>
           Miembros
@@ -83,6 +93,17 @@ function AppContent() {
           ← Volver
         </button>
         <MembersListPage />
+      </>
+    )
+  }
+
+  if (view === 'seasons' && canManageSeasons(member.roles)) {
+    return (
+      <>
+        <button type="button" onClick={() => setView('home')}>
+          ← Volver
+        </button>
+        <SeasonsPage />
       </>
     )
   }
