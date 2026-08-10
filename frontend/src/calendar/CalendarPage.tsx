@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { listActivities } from '../activities/activitiesService'
+import { useAuth } from '../auth/AuthContext'
 import { listEvents } from '../events/eventsService'
 import { getActiveSeason } from '../seasons/seasonsService'
 import type { Season } from '../seasons/types'
+import { listMyTasks } from '../tasks/tasksService'
 
 interface CalendarEntry {
   id: string
-  type: 'EVENT' | 'ACTIVITY'
+  type: 'EVENT' | 'ACTIVITY' | 'TASK'
   name: string
   date: string
   time: string
@@ -14,10 +16,13 @@ interface CalendarEntry {
 }
 
 // 12-calendar.md: the calendar owns no data, it aggregates other
-// entities. Dinners and Tasks will join this list once those phases
-// exist. Only the Agenda view is implemented for now (§9); Month/Week/Day
-// (§6-8) can follow later if the board needs them.
+// entities. Dinners will join this list once that phase exists. Tasks
+// only show the signed-in member's own (12-calendar.md §12) — the
+// Tasks screen is the place to see everything as BOARD. Only the Agenda
+// view is implemented for now (§9); Month/Week/Day (§6-8) can follow
+// later if the board needs them.
 export function CalendarPage() {
+  const { member } = useAuth()
   const [season, setSeason] = useState<Season | null>(null)
   const [entries, setEntries] = useState<CalendarEntry[]>([])
   const [loading, setLoading] = useState(true)
@@ -25,6 +30,7 @@ export function CalendarPage() {
 
   useEffect(() => {
     async function load() {
+      if (!member) return
       setLoading(true)
       setError(null)
       try {
@@ -35,9 +41,10 @@ export function CalendarPage() {
           return
         }
 
-        const [events, activities] = await Promise.all([
+        const [events, activities, myTasks] = await Promise.all([
           listEvents(activeSeason.id),
           listActivities(activeSeason.id),
+          listMyTasks(activeSeason.id, member.id),
         ])
 
         const eventEntries: CalendarEntry[] = events
@@ -62,8 +69,21 @@ export function CalendarPage() {
             location: activity.location,
           }))
 
+        const taskEntries: CalendarEntry[] = myTasks
+          .filter((task) => task.status !== 'CANCELLED')
+          .map((task) => ({
+            id: `task-${task.id}`,
+            type: 'TASK',
+            name: task.title,
+            date: task.date,
+            time: task.time,
+            location: '',
+          }))
+
         setEntries(
-          [...eventEntries, ...activityEntries].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)),
+          [...eventEntries, ...activityEntries, ...taskEntries].sort((a, b) =>
+            (a.date + a.time).localeCompare(b.date + b.time),
+          ),
         )
       } catch {
         setError('No se ha podido cargar el calendario.')
@@ -72,10 +92,16 @@ export function CalendarPage() {
       }
     }
     load()
-  }, [])
+  }, [member])
 
   if (loading) return <p>Cargando...</p>
   if (!season) return <p>No hay ninguna temporada activa.</p>
+
+  const typeLabel: Record<CalendarEntry['type'], string> = {
+    EVENT: 'Evento',
+    ACTIVITY: 'Actividad',
+    TASK: 'Mi tarea',
+  }
 
   return (
     <main>
@@ -87,7 +113,7 @@ export function CalendarPage() {
           <li key={entry.id}>
             <strong>{entry.date}</strong> {entry.time} — {entry.name}
             {entry.location && ` (${entry.location})`}
-            <span> · {entry.type === 'EVENT' ? 'Evento' : 'Actividad'}</span>
+            <span> · {typeLabel[entry.type]}</span>
           </li>
         ))}
       </ul>

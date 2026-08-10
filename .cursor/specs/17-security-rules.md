@@ -309,13 +309,15 @@ seasons/{seasonId}/tasks
 
 Allowed:
 
-- Read assigned tasks.
+- Read a task only if their memberId is in that task's `assignedMemberIds` (12-calendar.md §12 — members must not see tasks they are not assigned to).
+- Read their own `TaskAssignment` (`assignments/{memberId}`).
 
 Not allowed:
 
+- Read tasks they are not assigned to.
 - Create tasks.
 - Assign tasks.
-- Modify tasks.
+- Modify tasks or their own assignment (task completion is board-managed, 05-tasks.md §14).
 
 ---
 

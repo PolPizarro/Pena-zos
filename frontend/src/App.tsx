@@ -13,6 +13,7 @@ import { ImportMembersPage } from './members/ImportMembersPage'
 import { MembersListPage } from './members/MembersListPage'
 import { ProfilePage } from './members/ProfilePage'
 import { SeasonsPage } from './seasons/SeasonsPage'
+import { TasksPage } from './tasks/TasksPage'
 
 function HomePage({ member }: { member: Member }) {
   return (
@@ -60,6 +61,7 @@ function AuthGate() {
       <Route element={<Layout member={member} />}>
         <Route path="/" element={<HomePage member={member} />} />
         <Route path="/calendar" element={<CalendarPage />} />
+        <Route path="/tasks" element={<TasksPage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/activities" element={<ActivitiesPage />} />
         <Route path="/profile" element={<ProfilePage member={member} />} />

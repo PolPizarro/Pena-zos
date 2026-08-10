@@ -405,11 +405,14 @@ Task
     requiredPeople
     status
     type
+    assignedMemberIds[]
     createdBy
     createdAt
     updatedAt
 }
 ```
+
+`assignedMemberIds` is a denormalized copy of the member ids that have a `TaskAssignment` (kept in sync whenever assignments are added/removed). It exists so Firestore Security Rules can check "is this task assigned to me" without an extra read, per 12-calendar.md §12 (members must only see their own assigned tasks).
 
 ---
 
@@ -444,6 +447,8 @@ TaskAssignment
     updatedAt
 }
 ```
+
+`status` is `ASSIGNED` or `COMPLETED` — whether this specific person has completed their part of the task. This is independent of the Task's own `status` (05-tasks.md §9).
 
 ---
 

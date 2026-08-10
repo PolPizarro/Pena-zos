@@ -124,8 +124,10 @@ service cloud.firestore {
       }
 
       // ---- tasks ----
+      // 12-calendar.md §12: members only see tasks assigned to them.
       match /tasks/{taskId} {
-        allow read: if isActiveMember();
+        allow read: if isBoard() || isAdmin()
+          || (isActiveMember() && myMemberId() in resource.data.assignedMemberIds);
         allow create, update: if isBoard() || isAdmin();
         allow delete: if false;
 

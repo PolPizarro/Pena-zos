@@ -336,20 +336,23 @@ time
 requiredPeople
 status
 type
+assignedMemberIds[]
 createdBy
 createdAt
 updatedAt
 }
 
+`assignedMemberIds` mirrors the assignments subcollection below so Security Rules can restrict member reads without an extra lookup (02-data-model.md §9).
+
 ---
 
 # 10. Task Assignments
 
-Tasks can be assigned to multiple members.
+Tasks can be assigned to multiple members. The document id is the member id (one assignment per member per task, matching 05-tasks.md §16).
 
 Path:
 
-seasons/{seasonId}/tasks/{taskId}/assignments/{assignmentId}
+seasons/{seasonId}/tasks/{taskId}/assignments/{memberId}
 
 ---
 
@@ -361,6 +364,8 @@ status
 createdAt
 updatedAt
 }
+
+`status` is `ASSIGNED` or `COMPLETED` (02-data-model.md §10).
 
 ---
 
