@@ -59,9 +59,10 @@ service cloud.firestore {
 
     // Per-role self-management (01-users-and-roles.md §7.1): a member
     // holding role X may grant/revoke role X on another member, touching
-    // only the `roles` field. ADMIN is handled separately (full access).
+    // only `roles` (and `updatedAt`, which carries no access implications).
+    // ADMIN is handled separately (full access).
     function onlyRolesFieldChanged() {
-      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['roles']);
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['roles', 'updatedAt']);
     }
 
     function changedRoles() {

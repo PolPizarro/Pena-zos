@@ -151,7 +151,7 @@ Path:
 
 members/{memberId}
 
-Role assignment follows 01-users-and-roles.md §7.1: a member holding role X may grant or revoke role X for other members, by writing only the `roles` field. `ADMIN` may write `roles` for any role. No role holder other than `ADMIN` may change any other field (`fullName`, `email`, `dni`, `status`).
+Role assignment follows 01-users-and-roles.md §7.1: a member holding role X may grant or revoke role X for other members, by writing only the `roles` field (`updatedAt` may also be written alongside it — it carries no access implications). `ADMIN` may write `roles` for any role. No role holder other than `ADMIN` may change any other field (`fullName`, `email`, `dni`, `status`).
 
 ---
 
