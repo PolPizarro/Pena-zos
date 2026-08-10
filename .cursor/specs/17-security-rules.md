@@ -352,8 +352,13 @@ seasons/{seasonId}/events
 
 Allowed:
 
-- Read activities.
-- Read events.
+- Read activities and events, except those with `status == 'DRAFT'` (06-activities.md §13, 07-events.md §10 — members cannot view drafts).
+- Create/update own `ActivityRegistration` (`registrations/{memberId}`), only while the activity's `status == 'REGISTRATION_OPEN'`.
+
+Not allowed:
+
+- Read draft activities or events.
+- Modify another member's registration.
 
 ---
 
@@ -362,7 +367,7 @@ Allowed:
 Allowed:
 
 - Create activities.
-- Modify activities.
+- Modify activities (including all registrations).
 - Create events.
 - Modify events.
 

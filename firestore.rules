@@ -138,22 +138,27 @@ service cloud.firestore {
       }
 
       // ---- activities ----
+      // 06-activities.md §13: members cannot see DRAFT activities.
       match /activities/{activityId} {
-        allow read: if isActiveMember();
+        allow read: if isBoard() || isAdmin() || (isActiveMember() && resource.data.status != 'DRAFT');
         allow create, update: if isBoard() || isAdmin();
         allow delete: if false;
 
-        // doc id == memberId
+        // doc id == memberId. Members can only register/update their own
+        // registration while the activity is accepting registrations.
         match /registrations/{memberId} {
           allow read: if isBoard() || isAdmin() || isOwnMember(memberId);
-          allow create, update: if isBoard() || isAdmin() || isOwnMember(memberId);
+          allow create, update: if (isBoard() || isAdmin())
+            || (isOwnMember(memberId)
+                && get(/databases/$(database)/documents/seasons/$(seasonId)/activities/$(activityId)).data.status == 'REGISTRATION_OPEN');
           allow delete: if false;
         }
       }
 
       // ---- events ----
+      // 07-events.md §10: members cannot see DRAFT events.
       match /events/{eventId} {
-        allow read: if isActiveMember();
+        allow read: if isBoard() || isAdmin() || (isActiveMember() && resource.data.status != 'DRAFT');
         allow create, update: if isBoard() || isAdmin();
         allow delete: if false;
       }

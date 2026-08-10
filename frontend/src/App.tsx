@@ -1,11 +1,14 @@
 import type { ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ActivitiesPage } from './activities/ActivitiesPage'
 import { Layout } from './app/Layout'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import { ChangePasswordPage } from './auth/ChangePasswordPage'
 import { LoginPage } from './auth/LoginPage'
 import { logout } from './auth/authService'
 import type { Member, MemberRole } from './auth/types'
+import { CalendarPage } from './calendar/CalendarPage'
+import { EventsPage } from './events/EventsPage'
 import { ImportMembersPage } from './members/ImportMembersPage'
 import { MembersListPage } from './members/MembersListPage'
 import { ProfilePage } from './members/ProfilePage'
@@ -56,6 +59,9 @@ function AuthGate() {
     <Routes>
       <Route element={<Layout member={member} />}>
         <Route path="/" element={<HomePage member={member} />} />
+        <Route path="/calendar" element={<CalendarPage />} />
+        <Route path="/events" element={<EventsPage />} />
+        <Route path="/activities" element={<ActivitiesPage />} />
         <Route path="/profile" element={<ProfilePage member={member} />} />
         <Route
           path="/seasons"
