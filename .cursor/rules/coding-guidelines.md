@@ -169,7 +169,7 @@ Components are responsible for:
 
 Firestore structure must follow:
 
-1-specs/15-firestore-data-model.md
+.cursor/specs/15-firestore-data-model.md
 
 Do not create:
 

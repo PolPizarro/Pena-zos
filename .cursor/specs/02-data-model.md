@@ -56,9 +56,10 @@ San Mateo 2026
     ├── Products
     ├── Orders
     ├── Inventory
-    ├── Deliveries
-    └── Finances
+    └── Deliveries
 ```
+
+Finances are intentionally excluded from this MVP structure. See §24 Future Entities and 13-finances.md.
 
 Historical seasons must remain accessible.
 
@@ -97,7 +98,8 @@ Examples:
 - Orders.
 - Deliveries.
 - Inventory.
-- Finances.
+
+Finances are a future addition (see §24) and are not part of the MVP seasonal data.
 
 ---
 
@@ -114,7 +116,7 @@ Season
  |
  ├── Dinner
  │     |
- │     └── DinnerAttendance
+ │     └── DinnerAttendee
  |
  ├── Task
  │     |
@@ -138,10 +140,10 @@ Season
  │     |
  │     └── DeliveryItem
  |
- ├── InventoryItem
- |
- └── FinancialMovement
+ └── InventoryItem
 ```
+
+`FinancialMovement` is a future entity (§24), not part of the MVP.
 
 ---
 
@@ -333,7 +335,7 @@ Dinner
 ```
 Dinner
  |
- └── DinnerAttendance
+ └── DinnerAttendee
 ```
 
 ---
@@ -344,23 +346,28 @@ Dinner
 
 Represents whether a member attends a dinner.
 
+The entity is named `DinnerAttendee` (matches 15-firestore-data-model.md).
+
 ---
 
 ## Attributes
 
 ```
-DinnerAttendance
+DinnerAttendee
 {
     id
     dinnerId
     memberId
     attending
     guestCount
+    guestCost
     guestPaymentStatus
     createdAt
     updatedAt
 }
 ```
+
+`guestCost` is the total cost associated with the member's guests, per 00-product.md.
 
 ---
 
@@ -542,6 +549,7 @@ Poll
     seasonId
     title
     description
+    type
     options[]
     startDate
     endDate
@@ -551,6 +559,8 @@ Poll
     updatedAt
 }
 ```
+
+`type` determines whether the poll is `SINGLE_CHOICE` or `MULTIPLE_CHOICE`, as defined in 08-polls.md.
 
 ---
 
@@ -572,16 +582,21 @@ Vote
     id
     pollId
     memberId
-    selectedOption
+    selectedOptions[]
     createdAt
+    updatedAt
 }
 ```
+
+`selectedOptions[]` holds one entry for `SINGLE_CHOICE` polls and one or more for `MULTIPLE_CHOICE` polls.
 
 ---
 
 ## Rules
 
-- A member can vote once per poll.
+- A member has at most one Vote document per poll.
+- A member can update their Vote while the poll is open, per 08-polls.md.
+- A member cannot vote or change their vote after the poll is closed.
 - Poll results must respect permissions.
 
 ---
@@ -691,13 +706,17 @@ InventoryItem
     seasonId
     name
     description
+    category
     quantity
     unit
     status
+    notes
     createdAt
     updatedAt
 }
 ```
+
+`category` and its values are defined in 09-inventory.md.
 
 ---
 
@@ -767,11 +786,13 @@ DeliveryItem
 {
     id
     deliveryId
+    name
     type
     quantity
     delivered
     relatedOrderId
     createdAt
+    updatedAt
 }
 ```
 
@@ -792,7 +813,9 @@ OTHER
 
 ---
 
-# 21. Financial Movement
+# 21. Financial Movement (Future / Post-MVP)
+
+This entity is not part of the MVP. It is documented here so the model can accommodate it later without a redesign, per 13-finances.md.
 
 ## Purpose
 
@@ -846,7 +869,7 @@ EXPENSE
 | Order | Member / Board |
 | Inventory Item | Board |
 | Delivery | Board |
-| Financial Movement | Treasurer |
+| Financial Movement (Future) | Treasurer |
 
 ---
 
@@ -892,6 +915,7 @@ status = ARCHIVED
 
 The model should allow future additions:
 
+- Financial Movement (fully specified in §21 and in 13-finances.md).
 - Supplier.
 - Purchase.
 - Meeting.

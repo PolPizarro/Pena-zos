@@ -33,7 +33,7 @@ The application follows these principles:
 - Every authenticated user must have a Firestore user profile.
 - Permissions are managed through roles.
 - Users can have multiple roles.
-- The most permissive assigned role determines access.
+- Roles are additive: access is the union of the permissions granted by every role assigned to the user, not just the single most permissive one.
 - Sensitive information must have restricted access.
 
 ---
@@ -168,7 +168,7 @@ Not allowed:
 
 - Create seasons.
 - Modify seasons.
-- Close seasons.
+- Finish and archive seasons.
 
 ---
 
@@ -179,7 +179,7 @@ Allowed:
 - Create seasons.
 - Modify seasons.
 - Activate seasons.
-- Close seasons.
+- Finish and archive seasons.
 
 ---
 
@@ -409,11 +409,12 @@ Allowed:
 
 - Create own orders.
 - Read own orders.
-- Modify own orders before confirmation.
+- Modify own orders while `paymentStatus` is `PENDING`.
 
 Not allowed:
 
 - Read other members orders.
+- Modify own orders once `paymentStatus` is `PAID` or `NOT_REQUIRED`.
 
 ---
 
@@ -486,9 +487,7 @@ seasons/{seasonId}/inventory
 
 ## MEMBER
 
-Allowed:
-
-- Read inventory only if published.
+Not allowed. Members have no access to inventory, per 09-inventory.md.
 
 ---
 
@@ -510,7 +509,11 @@ Allowed:
 
 ---
 
-# 16. Finances Rules
+# 16. Finances Rules (Future / Post-MVP)
+
+The `finances` subcollection does not exist in the MVP. No rules should be deployed for it until 13-finances.md is formally brought into scope.
+
+The rules below are the intended future design, kept here for reference:
 
 Path:
 

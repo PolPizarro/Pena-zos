@@ -139,18 +139,14 @@ Users with BOARD role can access everything available to members plus:
 
 # 8. Treasurer Navigation
 
+In the MVP, the TREASURER role does not grant any navigation beyond the MEMBER role, per 01-users-and-roles.md §10.
+
 Users with TREASURER role can access:
 
 - Home.
 - Calendar.
-- Orders.
-- Finances.
 
-Treasurers can:
-
-- Review payments.
-- Manage income.
-- Manage expenses.
+The Finances screen and any order-payment management for Treasurers are Future / Post-MVP, per 13-finances.md. They are documented in §19 below for future reference only.
 
 Treasurers cannot access technical administration unless they have another role.
 
@@ -332,7 +328,9 @@ Features:
 
 ---
 
-# 19. Finances Screen
+# 19. Finances Screen (Future / Post-MVP)
+
+This screen is not built in the MVP. See 13-finances.md.
 
 The finances section is restricted.
 

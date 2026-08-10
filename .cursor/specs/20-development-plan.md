@@ -52,8 +52,9 @@ The MVP implementation is divided into the following phases:
 6. Festivity management.
 7. Orders and deliveries.
 8. Inventory.
-9. Finances.
-10. Final testing and deployment.
+9. Final testing and deployment.
+
+Finances (see Phase 12 below) is Future / Post-MVP and is not part of this phase list.
 
 ---
 
@@ -285,11 +286,13 @@ The board can manage available resources.
 
 ---
 
-# 15. Phase 12 — Finances
+# 15. Phase 12 — Finances (Future / Post-MVP)
+
+This phase is not part of the MVP, per 00-product.md (Non-Goals) and 13-finances.md. It is kept here as the intended next phase after the MVP ships.
 
 Objective:
 
-Provide optional financial management.
+Provide financial management.
 
 Tasks:
 
@@ -376,8 +379,9 @@ The recommended implementation order is:
 11. Products and orders.
 12. Deliveries.
 13. Inventory.
-14. Finances.
-15. Final improvements.
+14. Final improvements.
+
+Finances is Future / Post-MVP and follows after item 14, once formally brought into scope.
 
 ---
 

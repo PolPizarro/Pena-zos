@@ -257,6 +257,7 @@ Each season contains its own:
 * Events.
 * Tasks.
 * Polls.
+* Products.
 * Orders.
 * Inventory.
 * Deliveries.
@@ -381,11 +382,11 @@ A task may contain:
 * Status.
 * Task type.
 
-Minimum task statuses:
+Minimum task statuses (must match 05-tasks.md):
 
 ```text
 PENDING
-IN_PROGRESS
+ASSIGNED
 COMPLETED
 CANCELLED
 ```

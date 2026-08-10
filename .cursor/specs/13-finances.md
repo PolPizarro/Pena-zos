@@ -1,13 +1,21 @@
 # Peña Zos — Finances Specification
 
 **Version:** 0.1
-**Status:** Draft
+**Status:** Future / Post-MVP — not part of the initial MVP scope
 
 **Related Documents:**
 
 * 00-product.md
 * 01-users-and-roles.md
 * 02-data-model.md
+
+---
+
+# 0. MVP Scope Notice
+
+Per 00-product.md (Non-Goals — Expenses and Accounts), financial and account management is explicitly out of scope for the initial MVP. The treasurer will keep using the current external system during the MVP.
+
+This document describes the intended future design so that the MVP architecture and data model do not block adding it later. None of the rules below should be implemented, and none of the permissions below should be granted, until this module is formally brought into scope through a specification change.
 
 ---
 

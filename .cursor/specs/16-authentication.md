@@ -6,6 +6,7 @@
 **Related Documents:**
 - 00-product.md
 - 01-users-and-roles.md
+- 02-data-model.md
 - 15-firestore-data-model.md
 
 ---
@@ -55,10 +56,13 @@ All users are created by application administrators through the initial import p
 
 The initial source of users is the Peña Zos Excel file.
 
-The creation process creates:
+The creation process creates or updates, in this order:
 
-- Firebase Authentication user.
-- Firestore user document.
+1. The `Member` document (business identity and roles), as defined in 02-data-model.md and 15-firestore-data-model.md.
+2. A Firebase Authentication account.
+3. The `User` document, linked to the Member through `memberId`.
+
+The `User` document never duplicates information already stored on the `Member` document.
 
 ---
 
@@ -66,26 +70,31 @@ The creation process creates:
 
 The Excel file contains:
 
-- Name.
-- Surname.
+- Full name.
 - Email.
 - Phone.
 - Roles.
+- Active status.
 
 Example:
 
-Name:
-Juan
-
-Surname:
-Pérez
+Full name:
+Juan Pérez
 
 Email:
 juan@example.com
 
+Phone:
+600000000
+
 Roles:
 - MEMBER
 - BOARD
+
+Active status:
+ACTIVE
+
+This information is stored on the `Member` document, not on the `User` document.
 
 ---
 
@@ -115,26 +124,35 @@ users/{uid}
 
 Stored information:
 
-- Name.
-- Surname.
+- Firebase UID.
+- Linked member identifier (`memberId`).
 - Email.
-- Phone.
-- Roles.
-- Active status.
-- Password change status.
+- Password change status (`mustChangePassword`).
 - Creation date.
 - Update date.
 
+The `User` document is a technical record only. It does not store name, phone, roles, or active status.
+
+That information belongs to the linked `Member` document (see 02-data-model.md and 15-firestore-data-model.md) and must be read through `memberId`.
+
 Example:
 
-User:
+User (users/abc123):
 
-Juan Pérez
+```
+firebaseUid: abc123
+memberId: member_456
+email: juan@example.com
+mustChangePassword: true
+```
 
-Roles:
+Linked Member (members/member_456):
 
-- MEMBER
-- BOARD
+```
+fullName: Juan Pérez
+roles: [MEMBER, BOARD]
+status: ACTIVE
+```
 
 ---
 
@@ -239,39 +257,36 @@ Application login flow:
 2. User enters email and password.
 3. Firebase Authentication validates credentials.
 4. Application receives Firebase UID.
-5. Application loads Firestore user information.
-6. Application loads user roles.
+5. Application loads the Firestore `User` document (`users/{uid}`).
+6. Application loads the linked `Member` document (`members/{memberId}`) and reads its roles and status.
 7. Application applies permissions.
 8. User accesses available features.
 
 ---
 
-# 12. User Status
+# 12. Member Status
 
-Users have an active status.
-
-Field:
-
-active
+Access depends on the linked Member's `status` field, as defined in 02-data-model.md.
 
 Possible values:
 
-- true.
-- false.
+- ACTIVE.
+- INACTIVE.
+- PENDING_ACCESS.
 
-Inactive users cannot access the application.
+Members with status other than `ACTIVE` cannot access the application.
 
 ---
 
 # 13. Role Loading
 
-After authentication, the application loads the roles stored in the user document.
+After authentication, the application loads the roles stored on the linked `Member` document.
 
-A user can have multiple roles.
+A member can have multiple roles.
 
 Example:
 
-User:
+Member:
 
 Juan Pérez
 

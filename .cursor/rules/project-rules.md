@@ -77,7 +77,7 @@ Do not introduce:
 
 Follow the architecture defined in:
 
-- architecture.md
+- .cursor/specs/18-application-architecture.md
 
 The application must keep a clear separation between:
 

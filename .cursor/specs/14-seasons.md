@@ -40,29 +40,34 @@ A season follows this lifecycle:
     Created
        |
        v
-    Preparation
+    Planning
        |
        v
     Active
        |
        v
-    Closed
+    Finished
+       |
+       v
+    Archived
 
 ---
 
 # 3. Season States
 
-Possible values:
+Possible values (must match 02-data-model.md and 15-firestore-data-model.md):
 
-    PREPARATION
+    PLANNING
 
     ACTIVE
 
-    CLOSED
+    FINISHED
+
+    ARCHIVED
 
 ---
 
-## PREPARATION
+## PLANNING
 
 The board is preparing the festivities.
 
@@ -95,14 +100,26 @@ During this state:
 
 ---
 
-## CLOSED
+## FINISHED
 
-The festivities have finished.
+The festivities have just finished.
 
 During this state:
 
 - Historical information remains available.
 - Operational changes should not be allowed.
+- The board reviews the season before archiving it.
+
+---
+
+## ARCHIVED
+
+The season has been fully closed out by the board.
+
+During this state:
+
+- Historical information remains available and read-only.
+- No further changes are expected.
 
 ---
 
@@ -172,7 +189,7 @@ Example:
     Previous season:
 
     San Mateo 2025
-    CLOSED
+    ARCHIVED
 
 ---
 
@@ -189,7 +206,8 @@ The following entities belong to a season:
 - Products.
 - Orders.
 - Deliveries.
-- Financial movements.
+
+Financial movements are Future / Post-MVP (see 13-finances.md) and are not created under a season in the MVP.
 
 Example:
 
@@ -213,8 +231,8 @@ Example:
         +-- Orders
         |
         +-- Deliveries
-        |
-        +-- Finances
+
+(Finances is Future / Post-MVP.)
 
 ---
 
@@ -268,7 +286,7 @@ Members cannot:
 - Create seasons.
 - Modify seasons.
 - Activate seasons.
-- Close seasons.
+- Finish and archive seasons.
 
 ---
 
@@ -279,14 +297,14 @@ Board members can:
 - Create seasons.
 - Configure season dates.
 - Activate seasons.
-- Close seasons.
+- Finish and archive seasons.
 - Access historical information.
 
 ---
 
 # 13. Season Closing
 
-When a season is closed:
+When a season is finished and archived:
 
 The application preserves:
 
@@ -297,9 +315,10 @@ The application preserves:
 - Orders.
 - Deliveries.
 - Inventory information.
-- Financial movements.
 
-Closed seasons are read-only.
+(Financial movements will also be preserved once Finances is in scope — see 13-finances.md.)
+
+Finished and archived seasons are read-only.
 
 ---
 
@@ -321,16 +340,14 @@ Allowed:
 - Create seasons.
 - Modify seasons.
 - Activate seasons.
-- Close seasons.
+- Mark seasons as finished and archive them.
 - View historical seasons.
 
 ---
 
 ## TREASURER
 
-Allowed:
-
-- Access financial information from seasons.
+No additional MVP permissions beyond MEMBER. Access to financial information from seasons is Future / Post-MVP — see 13-finances.md.
 
 ---
 
@@ -350,7 +367,7 @@ The application must validate:
 - Season year is required.
 - Season name is required.
 - Only one season can be ACTIVE.
-- Closed seasons cannot be modified.
+- Finished and archived seasons cannot be modified.
 - Historical information must not be deleted.
 
 ---

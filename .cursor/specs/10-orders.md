@@ -288,9 +288,11 @@ Board members cannot:
 
 ---
 
-# 10. Treasurer Permissions
+# 10. Treasurer Permissions (Future / Post-MVP)
 
-Treasurers can:
+In the MVP, the TREASURER role has no additional order permissions beyond MEMBER, per 01-users-and-roles.md §10 and 00-product.md §4.3. Order payment status is managed by the Board in the MVP (§9).
+
+Once Finances is brought into scope (13-finances.md), Treasurers are intended to:
 
 - View order payment information.
 - Validate payments.
@@ -331,7 +333,7 @@ The system must support:
 
 ---
 
-## Treasurer queries
+## Treasurer queries (Future / Post-MVP)
 
 - Get pending payments.
 - Calculate collected payments.

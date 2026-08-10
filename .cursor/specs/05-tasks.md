@@ -38,9 +38,6 @@ Created
 Assigned
    |
    v
-In progress
-   |
-   v
 Completed
 ```
 
@@ -138,13 +135,7 @@ The task exists but nobody has been assigned.
 
 ## ASSIGNED
 
-One or more members have been assigned.
-
----
-
-## IN_PROGRESS
-
-The assigned members have started working on the task.
+One or more members have been assigned. Work may already be underway; the MVP does not track a separate in-progress state.
 
 ---
 
@@ -317,7 +308,6 @@ Calendar entries should display:
 Members should only see:
 
 * Their own assigned tasks.
-* Public task information allowed by permissions.
 
 Board members can see all tasks.
 

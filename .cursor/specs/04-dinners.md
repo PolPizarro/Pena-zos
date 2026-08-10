@@ -8,7 +8,7 @@
 * 00-product.md
 * 01-users-and-roles.md
 * 02-data-model.md
-* 03-authentication.md
+* 16-authentication.md
 
 ---
 
@@ -151,12 +151,13 @@ Members can register for a dinner.
 A member registration contains:
 
 ```text
-DinnerAttendance
+DinnerAttendee
 {
     dinnerId
     memberId
     attending
     guestCount
+    guestCost
     guestPaymentStatus
     createdAt
     updatedAt

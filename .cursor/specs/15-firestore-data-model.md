@@ -13,7 +13,7 @@
 - 12-calendar.md
 - 13-finances.md
 - 14-seasons.md
-- architecture.md
+- 18-application-architecture.md
 
 ---
 
@@ -77,7 +77,8 @@ contains:
 - orders
 - deliveries
 - inventory
-- finances
+
+`finances` is a future (Post-MVP) subcollection — see §21 and 13-finances.md.
 
 ---
 
@@ -251,7 +252,8 @@ seasons/{seasonId}
 - orders
 - deliveries
 - inventory
-- finances
+
+(`finances` is Future / Post-MVP — see §21.)
 
 This ensures historical separation between San Mateo editions.
 
@@ -296,6 +298,7 @@ DinnerAttendee:
 memberId
 attending
 guestCount
+guestCost
 guestPaymentStatus
 createdAt
 updatedAt
@@ -443,6 +446,7 @@ Poll:
 {
 title
 description
+type
 options[]
 startDate
 endDate
@@ -452,29 +456,33 @@ createdAt
 updatedAt
 }
 
+`type` is `SINGLE_CHOICE` or `MULTIPLE_CHOICE`, as defined in 08-polls.md.
+
 ---
 
-# 15. Poll Responses
+# 15. Votes
 
 Path:
 
-seasons/{seasonId}/polls/{pollId}/responses/{responseId}
+seasons/{seasonId}/polls/{pollId}/votes/{voteId}
 
 ---
 
-PollResponse:
+Vote:
 
 {
 memberId
-selectedOption
+selectedOptions[]
 createdAt
+updatedAt
 }
 
 ---
 
 Rules:
 
-- One response per member and poll.
+- One vote document per member and poll.
+- A member can update their vote while the poll is open.
 - Results respect permissions.
 
 ---
@@ -599,6 +607,7 @@ quantity
 delivered
 relatedOrderId
 createdAt
+updatedAt
 }
 
 ---
@@ -607,7 +616,7 @@ Item Types:
 
 - DRINKS_VOUCHER
 - DINNER_VOUCHER
-- PATCH
+- PEÑA_PATCH
 - SEMPA_VOUCHER
 - ORDER_PRODUCT
 - OTHER
@@ -627,9 +636,11 @@ InventoryItem:
 {
 name
 description
+category
 quantity
 unit
 status
+notes
 createdAt
 updatedAt
 }
@@ -652,7 +663,9 @@ Napkins:
 
 ---
 
-# 21. Finances Collection
+# 21. Finances Collection (Future / Post-MVP)
+
+This collection is not created in the MVP. It is documented here so the schema can be added later without a redesign, per 13-finances.md.
 
 Financial movements belong to a season.
 
@@ -737,7 +750,8 @@ The model must support:
 - Get member deliveries.
 - Get calendar information.
 - Get pending deliveries.
-- Calculate financial balance.
+
+(Calculate financial balance is Future / Post-MVP — see §21.)
 
 ---
 

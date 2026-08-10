@@ -136,15 +136,16 @@ The import process must:
 
 # 6. User Account Creation
 
-The MVP should support controlled account creation.
+The MVP does not allow self-registration.
 
 The expected flow:
 
-1. Administrator imports members.
-2. Member receives access instructions.
-3. Member creates an account.
-4. Administrator or the system links the account with the member.
-5. The member can access the application.
+1. Administrator imports the member.
+2. The system creates a Firebase Authentication account with a temporary password and links it to the member.
+3. The member receives access instructions and the temporary password.
+4. The member logs in and is required to change the password before accessing the application.
+
+This flow is defined in detail in 16-authentication.md.
 
 A person without an imported member record should not automatically become a Peña Zos member.
 

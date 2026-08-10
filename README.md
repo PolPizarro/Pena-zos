@@ -7,7 +7,7 @@ Backend:
 Firebase
 
 Documentation:
-See .cursor/1-specs
+See .cursor/specs
 
 Development rules:
-See .cursor/2-rules
+See .cursor/rules

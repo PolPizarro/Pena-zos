@@ -225,10 +225,13 @@ The calendar updates automatically.
 
 Tasks require special visibility rules.
 
-Members should only see:
+Tasks are assigned by the board. Members are only consumers of the information and cannot modify them, per 05-tasks.md.
+
+Members can only see:
 
 * Their own assigned tasks.
-* Public tasks if configured.
+
+There is no concept of a "public" task in the MVP; a task not assigned to a member is not visible to that member.
 
 Board members can see:
 
