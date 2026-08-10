@@ -66,6 +66,16 @@ The `User` document never duplicates information already stored on the `Member` 
 
 ---
 
+## 3.1 Account Creation Without Losing the Admin Session
+
+The Firebase Authentication client SDK signs the browser into any account it creates. If the administrator's browser created the new member's account directly, it would replace the administrator's own session.
+
+To avoid this without introducing a backend, account creation uses a second, temporary Firebase App instance (same project, same config) purely to call the account-creation SDK method and immediately sign out of it. The administrator's session in the primary app instance is never touched. All Firestore writes (the `Member` and `User` documents) are performed through the primary app instance, authenticated as the administrator, so 17-security-rules.md's `ADMIN`-only rules apply normally.
+
+This keeps the architecture "Firebase only, no custom backend" per 18-application-architecture.md.
+
+---
+
 # 4. Initial Excel Import
 
 The Excel file contains, per row:

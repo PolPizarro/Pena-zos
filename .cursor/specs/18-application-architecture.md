@@ -184,6 +184,10 @@ Application startup:
    - Load roles.
    - Redirect to application.
 
+## 5.1 Admin-Driven Account Creation
+
+When an administrator imports members and Firebase Authentication accounts must be created for them (16-authentication.md §3.1), the app uses a second, temporary Firebase App instance (`firebase/secondaryAuth.ts`) solely to call the account-creation SDK method and sign out of it immediately. This avoids replacing the administrator's own session and avoids introducing a Cloud Functions backend for the MVP.
+
 ---
 
 # 6. Authorization Flow
