@@ -11,6 +11,7 @@ import { CalendarPage } from './calendar/CalendarPage'
 import { DeliveriesPage } from './deliveries/DeliveriesPage'
 import { DinnersPage } from './dinners/DinnersPage'
 import { EventsPage } from './events/EventsPage'
+import { InventoryPage } from './inventory/InventoryPage'
 import { ImportMembersPage } from './members/ImportMembersPage'
 import { MembersListPage } from './members/MembersListPage'
 import { ProfilePage } from './members/ProfilePage'
@@ -78,6 +79,14 @@ function AuthGate() {
           element={
             <RequireRole roles={['BOARD', 'ADMIN']} member={member}>
               <SeasonsPage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/inventory"
+          element={
+            <RequireRole roles={['BOARD', 'ADMIN']} member={member}>
+              <InventoryPage />
             </RequireRole>
           }
         />

@@ -20,6 +20,7 @@ export function Layout({ member }: { member: Member }) {
         <NavLink to="/deliveries">Entregas</NavLink>
         <NavLink to="/profile">Mi perfil</NavLink>
         {(roles.includes('BOARD') || roles.includes('ADMIN')) && <NavLink to="/seasons">Temporadas</NavLink>}
+        {(roles.includes('BOARD') || roles.includes('ADMIN')) && <NavLink to="/inventory">Inventario</NavLink>}
         {(roles.includes('BOARD') || roles.includes('TREASURER') || roles.includes('ADMIN')) && (
           <NavLink to="/members">Miembros</NavLink>
         )}
