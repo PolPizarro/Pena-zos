@@ -205,17 +205,18 @@ service cloud.firestore {
       }
 
       // ---- orders ----
-      // Members can create their own orders and modify them only while
-      // paymentStatus is PENDING (17-security-rules.md §13). Treasurer
-      // access is deferred with Finances (10-orders.md §10).
+      // Members can create their own orders and modify quantity/size only
+      // while paymentStatus is PENDING — never paymentStatus itself, which
+      // is board-managed (17-security-rules.md §13, 10-orders.md §9).
+      // Treasurer access is deferred with Finances (10-orders.md §10).
       match /orders/{orderId} {
         allow read: if isBoard() || isAdmin() || (isActiveMember() && resource.data.memberId == myMemberId());
         allow create: if isActiveMember() && request.resource.data.memberId == myMemberId();
         allow update: if (isBoard() || isAdmin())
           || (isActiveMember()
               && resource.data.memberId == myMemberId()
-              && request.resource.data.memberId == myMemberId()
-              && resource.data.paymentStatus == 'PENDING');
+              && resource.data.paymentStatus == 'PENDING'
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['quantity', 'size', 'updatedAt']));
         allow delete: if false;
       }
 

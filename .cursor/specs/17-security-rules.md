@@ -474,12 +474,13 @@ Allowed:
 
 - Create own orders.
 - Read own orders.
-- Modify own orders while `paymentStatus` is `PENDING`.
+- Modify `quantity`/`size` on their own orders while `paymentStatus` is `PENDING`.
 
 Not allowed:
 
 - Read other members orders.
 - Modify own orders once `paymentStatus` is `PAID` or `NOT_REQUIRED`.
+- Modify `paymentStatus`, even on their own order while `PENDING` (10-orders.md §9 — payment status is board-managed).
 
 ---
 
