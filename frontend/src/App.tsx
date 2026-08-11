@@ -13,6 +13,7 @@ import { EventsPage } from './events/EventsPage'
 import { ImportMembersPage } from './members/ImportMembersPage'
 import { MembersListPage } from './members/MembersListPage'
 import { ProfilePage } from './members/ProfilePage'
+import { PollsPage } from './polls/PollsPage'
 import { SeasonsPage } from './seasons/SeasonsPage'
 import { TasksPage } from './tasks/TasksPage'
 
@@ -66,6 +67,7 @@ function AuthGate() {
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/activities" element={<ActivitiesPage />} />
+        <Route path="/polls" element={<PollsPage />} />
         <Route path="/profile" element={<ProfilePage member={member} />} />
         <Route
           path="/seasons"

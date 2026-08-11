@@ -395,12 +395,14 @@ seasons/{seasonId}/polls
 
 Allowed:
 
-- Read active polls.
-- Submit own responses.
+- Read polls, except those with `status == 'DRAFT'` (08-polls.md §9).
+- Create/update their own vote (`votes/{memberId}`), only while `status == 'PUBLISHED'`.
 
 Not allowed:
 
-- Modify other responses.
+- Read draft polls.
+- Read other members' votes.
+- Modify other members' votes.
 - Create polls.
 
 ---

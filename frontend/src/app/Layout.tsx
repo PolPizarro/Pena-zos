@@ -15,6 +15,7 @@ export function Layout({ member }: { member: Member }) {
         <NavLink to="/tasks">Tareas</NavLink>
         <NavLink to="/events">Eventos</NavLink>
         <NavLink to="/activities">Actividades</NavLink>
+        <NavLink to="/polls">Encuestas</NavLink>
         <NavLink to="/profile">Mi perfil</NavLink>
         {(roles.includes('BOARD') || roles.includes('ADMIN')) && <NavLink to="/seasons">Temporadas</NavLink>}
         {(roles.includes('BOARD') || roles.includes('TREASURER') || roles.includes('ADMIN')) && (

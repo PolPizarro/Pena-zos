@@ -180,8 +180,9 @@ service cloud.firestore {
       }
 
       // ---- polls ----
+      // 08-polls.md §9: members cannot see DRAFT polls.
       match /polls/{pollId} {
-        allow read: if isActiveMember();
+        allow read: if isBoard() || isAdmin() || (isActiveMember() && resource.data.status != 'DRAFT');
         allow create, update: if isBoard() || isAdmin();
         allow delete: if false;
 
