@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { listActivities } from '../activities/activitiesService'
 import { useAuth } from '../auth/AuthContext'
+import { listDinners } from '../dinners/dinnersService'
 import { listEvents } from '../events/eventsService'
 import { getActiveSeason } from '../seasons/seasonsService'
 import type { Season } from '../seasons/types'
@@ -8,7 +9,7 @@ import { listMyTasks } from '../tasks/tasksService'
 
 interface CalendarEntry {
   id: string
-  type: 'EVENT' | 'ACTIVITY' | 'TASK'
+  type: 'EVENT' | 'ACTIVITY' | 'TASK' | 'DINNER'
   name: string
   date: string
   time: string
@@ -16,8 +17,7 @@ interface CalendarEntry {
 }
 
 // 12-calendar.md: the calendar owns no data, it aggregates other
-// entities. Dinners will join this list once that phase exists. Tasks
-// only show the signed-in member's own (12-calendar.md §12) — the
+// entities. Tasks only show the signed-in member's own (§12) — the
 // Tasks screen is the place to see everything as BOARD. Only the Agenda
 // view is implemented for now (§9); Month/Week/Day (§6-8) can follow
 // later if the board needs them.
@@ -41,10 +41,11 @@ export function CalendarPage() {
           return
         }
 
-        const [events, activities, myTasks] = await Promise.all([
+        const [events, activities, myTasks, dinners] = await Promise.all([
           listEvents(activeSeason.id),
           listActivities(activeSeason.id),
           listMyTasks(activeSeason.id, member.id),
+          listDinners(activeSeason.id),
         ])
 
         const eventEntries: CalendarEntry[] = events
@@ -80,8 +81,19 @@ export function CalendarPage() {
             location: '',
           }))
 
+        const dinnerEntries: CalendarEntry[] = dinners
+          .filter((dinner) => dinner.status !== 'DRAFT' && dinner.status !== 'CANCELLED')
+          .map((dinner) => ({
+            id: `dinner-${dinner.id}`,
+            type: 'DINNER',
+            name: dinner.name,
+            date: dinner.date,
+            time: dinner.time,
+            location: dinner.location,
+          }))
+
         setEntries(
-          [...eventEntries, ...activityEntries, ...taskEntries].sort((a, b) =>
+          [...eventEntries, ...activityEntries, ...taskEntries, ...dinnerEntries].sort((a, b) =>
             (a.date + a.time).localeCompare(b.date + b.time),
           ),
         )
@@ -101,6 +113,7 @@ export function CalendarPage() {
     EVENT: 'Evento',
     ACTIVITY: 'Actividad',
     TASK: 'Mi tarea',
+    DINNER: 'Cena',
   }
 
   return (

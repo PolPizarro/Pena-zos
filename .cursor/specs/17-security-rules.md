@@ -267,15 +267,15 @@ seasons/{seasonId}/dinners
 
 Allowed:
 
-- Read dinners.
-- Register attendance.
-- Update own attendance information.
+- Read dinners, except those with `status == 'DRAFT'` (04-dinners.md §5 — only the board can see drafts; historical/closed dinners stay visible per 04-dinners.md §5 COMPLETED and the general historical-preservation principle).
+- Create/update their own `DinnerAttendee` (`attendees/{memberId}`), only while the dinner's `status == 'OPEN'`, and only the `attending` and `guestCount` fields (not `guestCost` or `guestPaymentStatus` — payment is board-managed, 04-dinners.md §10).
 
 Not allowed:
 
-- Create dinners.
-- Modify dinner information.
-- Delete dinners.
+- Read draft dinners.
+- Modify another member's attendance.
+- Modify `guestCost` or `guestPaymentStatus`, even on their own record.
+- Create, modify, or delete dinners.
 
 ---
 
@@ -285,7 +285,7 @@ Allowed:
 
 - Create dinners.
 - Modify dinners.
-- Manage attendance information.
+- Manage attendance information, including `guestCost` and `guestPaymentStatus`.
 
 ---
 

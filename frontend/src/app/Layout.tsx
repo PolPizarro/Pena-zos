@@ -11,6 +11,7 @@ export function Layout({ member }: { member: Member }) {
       <nav>
         <NavLink to="/">Inicio</NavLink>
         <NavLink to="/calendar">Calendario</NavLink>
+        <NavLink to="/dinners">Cenas</NavLink>
         <NavLink to="/tasks">Tareas</NavLink>
         <NavLink to="/events">Eventos</NavLink>
         <NavLink to="/activities">Actividades</NavLink>

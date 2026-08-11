@@ -8,6 +8,7 @@ import { LoginPage } from './auth/LoginPage'
 import { logout } from './auth/authService'
 import type { Member, MemberRole } from './auth/types'
 import { CalendarPage } from './calendar/CalendarPage'
+import { DinnersPage } from './dinners/DinnersPage'
 import { EventsPage } from './events/EventsPage'
 import { ImportMembersPage } from './members/ImportMembersPage'
 import { MembersListPage } from './members/MembersListPage'
@@ -61,6 +62,7 @@ function AuthGate() {
       <Route element={<Layout member={member} />}>
         <Route path="/" element={<HomePage member={member} />} />
         <Route path="/calendar" element={<CalendarPage />} />
+        <Route path="/dinners" element={<DinnersPage />} />
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/activities" element={<ActivitiesPage />} />

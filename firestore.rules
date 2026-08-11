@@ -110,15 +110,29 @@ service cloud.firestore {
       allow delete: if false;
 
       // ---- dinners ----
+      // 04-dinners.md §5: members cannot see DRAFT dinners.
       match /dinners/{dinnerId} {
-        allow read: if isActiveMember();
+        allow read: if isBoard() || isAdmin() || (isActiveMember() && resource.data.status != 'DRAFT');
         allow create, update: if isBoard() || isAdmin();
         allow delete: if false;
 
-        // doc id == memberId
+        // doc id == memberId. Members may only set attending/guestCount,
+        // only while the dinner is OPEN. guestCost/guestPaymentStatus are
+        // board-managed (04-dinners.md §10).
         match /attendees/{memberId} {
           allow read: if isBoard() || isAdmin() || isOwnMember(memberId);
-          allow create, update: if isBoard() || isAdmin() || isOwnMember(memberId);
+
+          allow create: if isBoard() || isAdmin()
+            || (isOwnMember(memberId)
+                && get(/databases/$(database)/documents/seasons/$(seasonId)/dinners/$(dinnerId)).data.status == 'OPEN'
+                && request.resource.data.memberId == memberId
+                && request.resource.data.keys().hasOnly(['memberId', 'attending', 'guestCount', 'createdAt', 'updatedAt']));
+
+          allow update: if isBoard() || isAdmin()
+            || (isOwnMember(memberId)
+                && get(/databases/$(database)/documents/seasons/$(seasonId)/dinners/$(dinnerId)).data.status == 'OPEN'
+                && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attending', 'guestCount', 'updatedAt']));
+
           allow delete: if false;
         }
       }
