@@ -1,6 +1,6 @@
 import { collection, doc, getDocs, orderBy, query, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase/config'
-import type { InventoryCategory, InventoryItem, InventoryStatus, InventoryUnit } from './types'
+import type { InventoryCategory, InventoryItem, InventoryUnit } from './types'
 
 function inventoryCollection(seasonId: string) {
   return collection(db, 'seasons', seasonId, 'inventory')

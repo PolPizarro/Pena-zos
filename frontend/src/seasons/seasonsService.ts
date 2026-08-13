@@ -21,7 +21,8 @@ export async function listSeasons(): Promise<Season[]> {
 
 export async function getActiveSeason(): Promise<Season | null> {
   const snapshot = await getDocs(query(collection(db, 'seasons'), where('status', '==', 'ACTIVE'), limit(1)))
-  return snapshot.empty ? null : { id: snapshot.docs[0].id, ...(snapshot.docs[0].data() as Omit<Season, 'id'>) }
+  const [firstDoc] = snapshot.docs
+  return firstDoc ? { id: firstDoc.id, ...(firstDoc.data() as Omit<Season, 'id'>) } : null
 }
 
 export interface NewSeasonInput {

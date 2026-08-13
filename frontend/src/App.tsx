@@ -39,25 +39,39 @@ function AuthGate() {
   const { firebaseUser, userDoc, member, loading } = useAuth()
 
   if (loading) {
-    return <p>Cargando...</p>
+    return (
+      <div className="auth-screen">
+        <p>Cargando...</p>
+      </div>
+    )
   }
 
   if (!firebaseUser) {
-    return <LoginPage />
+    return (
+      <div className="auth-screen">
+        <LoginPage />
+      </div>
+    )
   }
 
   if (userDoc?.mustChangePassword) {
-    return <ChangePasswordPage />
+    return (
+      <div className="auth-screen">
+        <ChangePasswordPage />
+      </div>
+    )
   }
 
   if (!member || member.status !== 'ACTIVE') {
     return (
-      <main>
-        <p>Tu cuenta no tiene acceso activo. Contacta con la junta de Peña Zos.</p>
-        <button type="button" onClick={() => logout()}>
-          Cerrar sesión
-        </button>
-      </main>
+      <div className="auth-screen">
+        <main>
+          <p>Tu cuenta no tiene acceso activo. Contacta con la junta de Peña Zos.</p>
+          <button type="button" onClick={() => logout()}>
+            Cerrar sesión
+          </button>
+        </main>
+      </div>
     )
   }
 

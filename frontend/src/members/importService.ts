@@ -46,7 +46,9 @@ export async function parseExcelFile(file: File): Promise<ImportRow[]> {
   const buffer = await file.arrayBuffer()
   const workbook = XLSX.read(buffer, { type: 'array' })
   const firstSheetName = workbook.SheetNames[0]
+  if (!firstSheetName) return []
   const sheet = workbook.Sheets[firstSheetName]
+  if (!sheet) return []
   const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: '' })
 
   return rawRows.map((raw) => {
@@ -74,7 +76,8 @@ function generateTemporaryPassword(): string {
 
 async function findMemberIdByDni(dni: string): Promise<string | null> {
   const snapshot = await getDocs(query(collection(db, 'members'), where('dni', '==', dni), limit(1)))
-  return snapshot.empty ? null : snapshot.docs[0].id
+  const [firstDoc] = snapshot.docs
+  return firstDoc ? firstDoc.id : null
 }
 
 // Creates the Firebase Auth account via the secondary app instance, then

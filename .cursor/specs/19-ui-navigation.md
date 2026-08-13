@@ -365,6 +365,14 @@ Features:
 
 ---
 
+# 20a. Visual Identity
+
+The application uses Peña Zos's own colors: red and blue.
+
+Navigation on narrow screens collapses behind a toggled menu button, since the number of sections does not fit a single row (§2).
+
+---
+
 # 21. Responsive Requirements
 
 The application must be optimized for mobile usage.
