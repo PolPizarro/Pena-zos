@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { SearchableSelect } from '../shared/SearchableSelect'
 import { getActiveSeason } from '../seasons/seasonsService'
 import type { Season } from '../seasons/types'
 import { createInventoryItem, listInventoryItems, updateInventoryItem } from './inventoryService'
@@ -6,7 +7,13 @@ import type { InventoryCategory, InventoryItem, InventoryStatus, InventoryUnit }
 
 const CATEGORIES: InventoryCategory[] = ['DRINKS', 'FOOD', 'DECORATION', 'EQUIPMENT', 'SUPPLIES', 'OTHER']
 const UNITS: InventoryUnit[] = ['UNITS', 'BOXES', 'BOTTLES', 'LITERS', 'KILOGRAMS', 'PACKS', 'OTHER']
-const STATUSES: InventoryStatus[] = ['AVAILABLE', 'LOW_STOCK', 'OUT_OF_STOCK', 'DISCARDED']
+// DISCARDED is not offered as a manual status choice — it's the terminal
+// "deleted" state, set only through the "Eliminar" button below.
+const EDITABLE_STATUSES: InventoryStatus[] = ['AVAILABLE', 'LOW_STOCK', 'OUT_OF_STOCK']
+
+function toOptions(values: string[]) {
+  return values.map((value) => ({ value, label: value }))
+}
 
 export function InventoryPage() {
   const [season, setSeason] = useState<Season | null>(null)
@@ -95,8 +102,17 @@ export function InventoryPage() {
     }
   }
 
+  // "Eliminar" is a soft delete: the item is marked DISCARDED (already an
+  // existing status, 09-inventory.md §8) and hidden below, but preserved
+  // in Firestore (02-data-model.md §23).
+  async function handleDelete(item: InventoryItem) {
+    await handleStatusChange(item, 'DISCARDED')
+  }
+
   if (loading) return <p>Cargando...</p>
   if (!season) return <p>No hay ninguna temporada activa.</p>
+
+  const visibleItems = items.filter((item) => item.status !== 'DISCARDED')
 
   return (
     <main>
@@ -115,13 +131,12 @@ export function InventoryPage() {
         </label>
         <label>
           Categoría
-          <select value={category} onChange={(event) => setCategory(event.target.value as InventoryCategory)}>
-            {CATEGORIES.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+          <SearchableSelect
+            options={toOptions(CATEGORIES)}
+            value={category}
+            onChange={(value) => setCategory(value as InventoryCategory)}
+            placeholder="Elige una categoría..."
+          />
         </label>
         <label>
           Cantidad
@@ -129,13 +144,12 @@ export function InventoryPage() {
         </label>
         <label>
           Unidad
-          <select value={unit} onChange={(event) => setUnit(event.target.value as InventoryUnit)}>
-            {UNITS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+          <SearchableSelect
+            options={toOptions(UNITS)}
+            value={unit}
+            onChange={(value) => setUnit(value as InventoryUnit)}
+            placeholder="Elige una unidad..."
+          />
         </label>
         <label>
           Notas
@@ -146,7 +160,7 @@ export function InventoryPage() {
         </button>
       </form>
 
-      {items.length === 0 && <p>No hay artículos en el inventario.</p>}
+      {visibleItems.length === 0 && <p>No hay artículos en el inventario.</p>}
 
       <table>
         <thead>
@@ -157,10 +171,11 @@ export function InventoryPage() {
             <th>Unidad</th>
             <th>Estado</th>
             <th>Notas</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {items.map((item) => (
+          {visibleItems.map((item) => (
             <tr key={item.id}>
               <td>{item.name}</td>
               <td>{item.category}</td>
@@ -177,18 +192,19 @@ export function InventoryPage() {
               </td>
               <td>{item.unit}</td>
               <td>
-                <select
+                <SearchableSelect
+                  options={toOptions(EDITABLE_STATUSES)}
                   value={item.status}
-                  onChange={(event) => handleStatusChange(item, event.target.value as InventoryStatus)}
-                >
-                  {STATUSES.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => handleStatusChange(item, value as InventoryStatus)}
+                  placeholder="Elige un estado..."
+                />
               </td>
               <td>{item.notes}</td>
+              <td>
+                <button type="button" onClick={() => handleDelete(item)}>
+                  Eliminar
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>

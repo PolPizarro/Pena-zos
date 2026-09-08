@@ -462,9 +462,13 @@ Allowed:
 
 # 13. Orders Rules
 
+An Order is the header (`memberId`, `totalCost`, `paymentStatus`, `cancelled`); its product lines live in the `items` subcollection (10-orders.md §4a).
+
 Path:
 
 seasons/{seasonId}/orders
+
+seasons/{seasonId}/orders/{orderId}/items
 
 ---
 
@@ -472,15 +476,20 @@ seasons/{seasonId}/orders
 
 Allowed:
 
-- Create own orders.
+- Create own orders, only while the season's `ordersOpen` is `true` (10-orders.md §9a).
 - Read own orders.
-- Modify `quantity`/`size` on their own orders while `paymentStatus` is `PENDING`.
+- Modify `totalCost`/`cancelled` on their own order while `paymentStatus` is `PENDING` (the client recalculates `totalCost` whenever items change).
+- Cancel (`cancelled = true`) their own order while `paymentStatus` is `PENDING` (10-orders.md §4).
+- Create/read their own order's items (`OrderItem.memberId` matches, denormalized from the parent order per 02-data-model.md §17a); creating is also gated by `ordersOpen`, same as the order itself.
+- Modify or delete their own order's items while the parent order's `paymentStatus` is `PENDING`.
 
 Not allowed:
 
-- Read other members orders.
+- Read other members' orders or items.
 - Modify own orders once `paymentStatus` is `PAID` or `NOT_REQUIRED`.
 - Modify `paymentStatus`, even on their own order while `PENDING` (10-orders.md §9 — payment status is board-managed).
+- Modify or delete own order items once the parent order's `paymentStatus` is `PAID` or `NOT_REQUIRED`.
+- Un-cancel an order.
 
 ---
 
@@ -488,8 +497,11 @@ Not allowed:
 
 Allowed:
 
-- Read all orders.
+- Read all orders and items.
+- Create orders (and their items) on behalf of any member — needed for the bulk import (10-orders.md §15) — regardless of `ordersOpen` (10-orders.md §9a).
 - Manage order status.
+- Cancel any order, regardless of `paymentStatus`.
+- Create, modify, or delete any order's items, regardless of `paymentStatus` (corrections).
 
 ---
 

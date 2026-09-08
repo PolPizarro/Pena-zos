@@ -6,6 +6,7 @@ import { listProducts } from '../products/productsService'
 import type { Product } from '../products/types'
 import { getActiveSeason } from '../seasons/seasonsService'
 import type { Season } from '../seasons/types'
+import { SearchableSelect } from '../shared/SearchableSelect'
 import { MemberDeliveryView } from './MemberDeliveryView'
 
 export function DeliveriesPage() {
@@ -56,14 +57,12 @@ export function DeliveriesPage() {
         <>
           <label>
             Miembro
-            <select value={selectedMemberId} onChange={(event) => setSelectedMemberId(event.target.value)}>
-              <option value="">Selecciona...</option>
-              {members.map((candidate) => (
-                <option key={candidate.id} value={candidate.id}>
-                  {candidate.fullName}
-                </option>
-              ))}
-            </select>
+            <SearchableSelect
+              options={members.map((candidate) => ({ value: candidate.id, label: candidate.fullName }))}
+              value={selectedMemberId}
+              onChange={setSelectedMemberId}
+              placeholder="Busca un miembro..."
+            />
           </label>
 
           {selectedMemberId && (

@@ -57,6 +57,13 @@ service cloud.firestore {
       return isSignedIn() && myMemberId() == memberId;
     }
 
+    // 10-orders.md §9a: lets the board close member ordering independently
+    // of the season's lifecycle status. Board/admin bypass this everywhere
+    // it's checked (they manage orders regardless of the ordering window).
+    function seasonOrdersOpen(seasonId) {
+      return get(/databases/$(database)/documents/seasons/$(seasonId)).data.ordersOpen == true;
+    }
+
     // Per-role self-management (01-users-and-roles.md §7.1): a member
     // holding role X may grant/revoke role X on another member, touching
     // only `roles` (and `updatedAt`, which carries no access implications).
@@ -205,19 +212,43 @@ service cloud.firestore {
       }
 
       // ---- orders ----
-      // Members can create their own orders and modify quantity/size only
-      // while paymentStatus is PENDING — never paymentStatus itself, which
-      // is board-managed (17-security-rules.md §13, 10-orders.md §9).
+      // Order is the header (memberId, totalCost, paymentStatus, cancelled);
+      // its product lines live in the items subcollection (10-orders.md §4a).
+      // Members can create their own orders and modify totalCost/cancelled
+      // only while paymentStatus is PENDING — never paymentStatus itself,
+      // which is board-managed (17-security-rules.md §13, 10-orders.md §9).
       // Treasurer access is deferred with Finances (10-orders.md §10).
       match /orders/{orderId} {
         allow read: if isBoard() || isAdmin() || (isActiveMember() && resource.data.memberId == myMemberId());
-        allow create: if isActiveMember() && request.resource.data.memberId == myMemberId();
+        // Board/admin can create on behalf of any member (bulk import,
+        // 10-orders.md §15), regardless of ordersOpen; a member can only
+        // create their own, and only while ordersOpen (10-orders.md §9a).
+        allow create: if isBoard() || isAdmin()
+          || (isActiveMember() && request.resource.data.memberId == myMemberId() && seasonOrdersOpen(seasonId));
         allow update: if (isBoard() || isAdmin())
           || (isActiveMember()
               && resource.data.memberId == myMemberId()
               && resource.data.paymentStatus == 'PENDING'
-              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['quantity', 'size', 'updatedAt']));
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['totalCost', 'cancelled', 'updatedAt'])
+              && request.resource.data.cancelled is bool
+              && (resource.data.cancelled != true || request.resource.data.cancelled == true));
         allow delete: if false;
+
+        // OrderItem carries a denormalized memberId (mirrors
+        // Task.assignedMemberIds) so ownership can be checked without
+        // reading the parent order. Editing after PAID/NOT_REQUIRED needs
+        // the parent's paymentStatus, read once via get() — safe here since
+        // items are never created in the same batch as the parent order's
+        // payment-status change (that field is board-only).
+        match /items/{itemId} {
+          allow read: if isBoard() || isAdmin() || (isActiveMember() && resource.data.memberId == myMemberId());
+          allow create: if isBoard() || isAdmin()
+            || (isActiveMember() && request.resource.data.memberId == myMemberId() && seasonOrdersOpen(seasonId));
+          allow update, delete: if (isBoard() || isAdmin())
+            || (isActiveMember()
+                && resource.data.memberId == myMemberId()
+                && get(/databases/$(database)/documents/seasons/$(seasonId)/orders/$(orderId)).data.paymentStatus == 'PENDING');
+        }
       }
 
       // ---- deliveries ----

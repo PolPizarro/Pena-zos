@@ -148,6 +148,10 @@ export function ActivitiesPage() {
   if (loading) return <p>Cargando...</p>
   if (!season) return <p>No hay ninguna temporada activa.</p>
 
+  // "Eliminar" is a soft delete: the activity is marked CANCELLED and
+  // hidden here, but preserved in Firestore (02-data-model.md §23).
+  const visibleActivities = activities.filter((activity) => activity.status !== 'CANCELLED')
+
   return (
     <main>
       <h1>Actividades — {season.name}</h1>
@@ -198,10 +202,10 @@ export function ActivitiesPage() {
         </form>
       )}
 
-      {activities.length === 0 && <p>No hay actividades.</p>}
+      {visibleActivities.length === 0 && <p>No hay actividades.</p>}
 
       <ul>
-        {activities.map((activity) => (
+        {visibleActivities.map((activity) => (
           <li key={activity.id}>
             <strong>{activity.name}</strong> — {activity.date} {activity.startTime}
             {activity.location && ` — ${activity.location}`}
@@ -247,9 +251,9 @@ export function ActivitiesPage() {
                     Marcar completada
                   </button>
                 )}
-                {activity.status !== 'COMPLETED' && activity.status !== 'CANCELLED' && (
+                {activity.status !== 'COMPLETED' && (
                   <button type="button" onClick={() => handleStatusChange(activity.id, 'CANCELLED')}>
-                    Cancelar
+                    Eliminar
                   </button>
                 )}
               </>

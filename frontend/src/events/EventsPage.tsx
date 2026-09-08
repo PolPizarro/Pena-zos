@@ -80,6 +80,10 @@ export function EventsPage() {
   if (loading) return <p>Cargando...</p>
   if (!season) return <p>No hay ninguna temporada activa.</p>
 
+  // "Eliminar" is a soft delete: the event is marked CANCELLED and hidden
+  // here, but preserved in Firestore (02-data-model.md §23).
+  const visibleEvents = events.filter((eventItem) => eventItem.status !== 'CANCELLED')
+
   return (
     <main>
       <h1>Eventos — {season.name}</h1>
@@ -118,10 +122,10 @@ export function EventsPage() {
         </form>
       )}
 
-      {events.length === 0 && <p>No hay eventos.</p>}
+      {visibleEvents.length === 0 && <p>No hay eventos.</p>}
 
       <ul>
-        {events.map((eventItem) => (
+        {visibleEvents.map((eventItem) => (
           <li key={eventItem.id}>
             <strong>{eventItem.name}</strong> — {eventItem.date} {eventItem.startTime}
             {eventItem.location && ` — ${eventItem.location}`}
@@ -135,14 +139,14 @@ export function EventsPage() {
                   </button>
                 )}
                 {eventItem.status === 'PUBLISHED' && (
-                  <>
-                    <button type="button" onClick={() => handleStatusChange(eventItem.id, 'COMPLETED')}>
-                      Marcar completado
-                    </button>
-                    <button type="button" onClick={() => handleStatusChange(eventItem.id, 'CANCELLED')}>
-                      Cancelar
-                    </button>
-                  </>
+                  <button type="button" onClick={() => handleStatusChange(eventItem.id, 'COMPLETED')}>
+                    Marcar completado
+                  </button>
+                )}
+                {eventItem.status !== 'COMPLETED' && (
+                  <button type="button" onClick={() => handleStatusChange(eventItem.id, 'CANCELLED')}>
+                    Eliminar
+                  </button>
                 )}
               </>
             )}

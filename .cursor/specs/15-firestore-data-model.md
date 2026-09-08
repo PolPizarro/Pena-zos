@@ -222,9 +222,12 @@ year
 startDate
 endDate
 status
+ordersOpen
 createdAt
 updatedAt
 }
+
+`ordersOpen` (boolean) — whether members can currently create/add to orders, independent of `status` (10-orders.md §9a).
 
 ---
 
@@ -522,15 +525,20 @@ Product:
 {
 name
 description
+price
 requiresSize
 active
 createdAt
 updatedAt
 }
 
+`price` is a positive number, in euros (02-data-model.md §16).
+
 ---
 
 # 17. Orders Collection
+
+An Order is the header for one member's purchase (one checkout, one payment status, one total). Its products live in a subcollection.
 
 Path:
 
@@ -542,17 +550,52 @@ Order:
 
 {
 memberId
-productId
-quantity
-size
+source
+totalCost
 paymentStatus
+cancelled
 createdAt
 updatedAt
 }
 
+`totalCost` is the sum of `lineTotal` across the order's items (denormalized so lists don't need to read the subcollection).
+
+`source` is `MEMBER` or `IMPORT` (02-data-model.md §17, 10-orders.md §15).
+
+`cancelled` (boolean, default `false`) is a soft delete — hidden from normal order lists but preserved (10-orders.md §4).
+
 ---
 
-Payment Status:
+## 17a. Order Items
+
+An order can contain multiple product lines.
+
+Path:
+
+seasons/{seasonId}/orders/{orderId}/items/{itemId}
+
+---
+
+OrderItem:
+
+{
+memberId
+productId
+size
+quantity
+unitPrice
+lineTotal
+createdAt
+updatedAt
+}
+
+`memberId` is a denormalized copy of the parent order's `memberId` (mirrors `Task.assignedMemberIds`, §9) so Security Rules can check ownership on the item directly, without reading the parent order.
+
+`unitPrice` is a copy of the product's `price` at the time the item was added (historical preservation). `lineTotal` is `unitPrice × quantity`.
+
+---
+
+Payment Status (on the parent Order):
 
 - PENDING
 - PAID
@@ -563,8 +606,9 @@ Payment Status:
 Rules:
 
 - Orders belong to one season.
-- Members can create their own orders.
-- Board manages all orders.
+- Members can create their own orders and their items.
+- A member can add/change/remove their own items while the order is `PENDING`.
+- Board manages all orders and items.
 
 ---
 

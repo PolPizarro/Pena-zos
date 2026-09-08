@@ -2,10 +2,16 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { getActiveSeason } from '../seasons/seasonsService'
 import type { Season } from '../seasons/types'
+import { SearchableSelect } from '../shared/SearchableSelect'
 import { PollResults } from './PollResults'
 import { PollVoteForm } from './PollVoteForm'
 import { createPoll, listPolls, setPollStatus } from './pollsService'
 import type { Poll, PollStatus, PollType } from './types'
+
+const POLL_TYPE_OPTIONS: { value: PollType; label: string }[] = [
+  { value: 'SINGLE_CHOICE', label: 'Una opción' },
+  { value: 'MULTIPLE_CHOICE', label: 'Varias opciones' },
+]
 
 export function PollsPage() {
   const { member } = useAuth()
@@ -94,6 +100,10 @@ export function PollsPage() {
   if (loading) return <p>Cargando...</p>
   if (!season) return <p>No hay ninguna temporada activa.</p>
 
+  // "Eliminar" is a soft delete: the poll is marked CANCELLED and hidden
+  // here, but preserved in Firestore (02-data-model.md §23).
+  const visiblePolls = polls.filter((poll) => poll.status !== 'CANCELLED')
+
   return (
     <main>
       <h1>Encuestas — {season.name}</h1>
@@ -112,10 +122,12 @@ export function PollsPage() {
           </label>
           <label>
             Tipo
-            <select value={type} onChange={(event) => setType(event.target.value as PollType)}>
-              <option value="SINGLE_CHOICE">Una opción</option>
-              <option value="MULTIPLE_CHOICE">Varias opciones</option>
-            </select>
+            <SearchableSelect
+              options={POLL_TYPE_OPTIONS}
+              value={type}
+              onChange={(value) => setType(value as PollType)}
+              placeholder="Elige un tipo..."
+            />
           </label>
           <label>
             Opciones (una por línea)
@@ -135,10 +147,10 @@ export function PollsPage() {
         </form>
       )}
 
-      {polls.length === 0 && <p>No hay encuestas.</p>}
+      {visiblePolls.length === 0 && <p>No hay encuestas.</p>}
 
       <ul>
-        {polls.map((poll) => (
+        {visiblePolls.map((poll) => (
           <li key={poll.id}>
             <strong>{poll.title}</strong> ({poll.type === 'SINGLE_CHOICE' ? 'una opción' : 'varias opciones'})
             {poll.description && <p>{poll.description}</p>}
@@ -158,9 +170,9 @@ export function PollsPage() {
                     Cerrar votación
                   </button>
                 )}
-                {poll.status !== 'CLOSED' && poll.status !== 'CANCELLED' && (
+                {poll.status !== 'CLOSED' && (
                   <button type="button" onClick={() => handleStatusChange(poll.id, 'CANCELLED')}>
-                    Cancelar
+                    Eliminar
                   </button>
                 )}
 

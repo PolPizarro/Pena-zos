@@ -38,7 +38,7 @@ async function ensureDelivery(seasonId: string, memberId: string) {
 export async function addDeliveryItem(
   seasonId: string,
   memberId: string,
-  input: { name: string; type: DeliveryItemType; quantity: number; relatedOrderId?: string | null },
+  input: { name: string; type: DeliveryItemType; quantity: number; relatedOrderItemId?: string | null },
 ) {
   await ensureDelivery(seasonId, memberId)
   const ref = doc(itemsCollection(seasonId, memberId))
@@ -47,7 +47,7 @@ export async function addDeliveryItem(
     type: input.type,
     quantity: input.quantity,
     delivered: false,
-    relatedOrderId: input.relatedOrderId ?? null,
+    relatedOrderItemId: input.relatedOrderItemId ?? null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   })

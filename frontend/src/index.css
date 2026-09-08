@@ -254,6 +254,57 @@ th {
   margin: 0.5rem 0;
 }
 
+/* ---------- Searchable select ---------- */
+
+.searchable-select {
+  position: relative;
+}
+
+.searchable-select input {
+  width: 100%;
+}
+
+.searchable-select__options {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 0.25rem;
+}
+
+.searchable-select__options li {
+  padding: 0;
+  border: none;
+}
+
+.searchable-select__options button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  color: var(--color-ink);
+  font-weight: 400;
+  border-radius: 6px;
+  min-height: 40px;
+  padding: 0.4rem 0.6rem;
+}
+
+.searchable-select__options button:hover {
+  background: rgba(0, 59, 122, 0.08);
+}
+
+.searchable-select__empty {
+  padding: 0.5rem 0.6rem;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
 /* ---------- Navigation ---------- */
 
 .app-header {

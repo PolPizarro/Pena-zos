@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
-import { listMyOrders } from '../orders/ordersService'
-import type { Order } from '../orders/types'
+import { listMyOrders, listOrderItems } from '../orders/ordersService'
+import type { OrderItem } from '../orders/types'
 import type { Product } from '../products/types'
 import type { Season } from '../seasons/types'
 import { addDeliveryItem, getDelivery, listItems, setItemDelivered } from './deliveriesService'
@@ -28,7 +28,7 @@ export function MemberDeliveryView({
   const { member } = useAuth()
   const [delivery, setDelivery] = useState<Delivery | null>(null)
   const [items, setItems] = useState<DeliveryItem[]>([])
-  const [orders, setOrders] = useState<Order[]>([])
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -39,7 +39,9 @@ export function MemberDeliveryView({
       setDelivery(await getDelivery(season.id, memberId))
       setItems(await listItems(season.id, memberId))
       if (!isSelf) {
-        setOrders(await listMyOrders(season.id, memberId))
+        const orders = await listMyOrders(season.id, memberId)
+        const itemsPerOrder = await Promise.all(orders.map((order) => listOrderItems(season.id, order.id)))
+        setOrderItems(itemsPerOrder.flat())
       }
     } catch {
       setError('No se ha podido cargar la entrega.')
@@ -67,14 +69,14 @@ export function MemberDeliveryView({
     }
   }
 
-  async function handleAddOrderItem(order: Order) {
+  async function handleAddOrderItem(orderItem: OrderItem) {
     setError(null)
     try {
       await addDeliveryItem(season.id, memberId, {
-        name: productName(order.productId),
+        name: productName(orderItem.productId),
         type: 'ORDER_PRODUCT',
-        quantity: order.quantity,
-        relatedOrderId: order.id,
+        quantity: orderItem.quantity,
+        relatedOrderItemId: orderItem.id,
       })
       await refresh()
     } catch {
@@ -96,7 +98,7 @@ export function MemberDeliveryView({
   if (loading) return <p>Cargando entrega...</p>
 
   const alreadyAddedTypes = new Set(items.map((item) => item.type))
-  const alreadyAddedOrderIds = new Set(items.map((item) => item.relatedOrderId).filter(Boolean))
+  const alreadyAddedOrderItemIds = new Set(items.map((item) => item.relatedOrderItemId).filter(Boolean))
 
   return (
     <div>
@@ -126,14 +128,14 @@ export function MemberDeliveryView({
             </button>
           ))}
 
-          {orders.filter((order) => !alreadyAddedOrderIds.has(order.id)).length > 0 && (
+          {orderItems.filter((orderItem) => !alreadyAddedOrderItemIds.has(orderItem.id)).length > 0 && (
             <>
               <h3>Añadir productos de pedidos</h3>
-              {orders
-                .filter((order) => !alreadyAddedOrderIds.has(order.id))
-                .map((order) => (
-                  <button key={order.id} type="button" onClick={() => handleAddOrderItem(order)}>
-                    + {productName(order.productId)} × {order.quantity}
+              {orderItems
+                .filter((orderItem) => !alreadyAddedOrderItemIds.has(orderItem.id))
+                .map((orderItem) => (
+                  <button key={orderItem.id} type="button" onClick={() => handleAddOrderItem(orderItem)}>
+                    + {productName(orderItem.productId)} × {orderItem.quantity}
                   </button>
                 ))}
             </>

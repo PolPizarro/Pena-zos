@@ -11,12 +11,15 @@ import { CalendarPage } from './calendar/CalendarPage'
 import { DeliveriesPage } from './deliveries/DeliveriesPage'
 import { DinnersPage } from './dinners/DinnersPage'
 import { EventsPage } from './events/EventsPage'
+import { ImportInventoryPage } from './inventory/ImportInventoryPage'
 import { InventoryPage } from './inventory/InventoryPage'
 import { ImportMembersPage } from './members/ImportMembersPage'
 import { MembersListPage } from './members/MembersListPage'
 import { ProfilePage } from './members/ProfilePage'
+import { ImportOrdersPage } from './orders/ImportOrdersPage'
 import { OrdersPage } from './orders/OrdersPage'
 import { PollsPage } from './polls/PollsPage'
+import { ProductsPage } from './products/ProductsPage'
 import { SeasonsPage } from './seasons/SeasonsPage'
 import { TasksPage } from './tasks/TasksPage'
 
@@ -85,7 +88,16 @@ function AuthGate() {
         <Route path="/events" element={<EventsPage />} />
         <Route path="/activities" element={<ActivitiesPage />} />
         <Route path="/polls" element={<PollsPage />} />
+        <Route path="/products" element={<ProductsPage />} />
         <Route path="/orders" element={<OrdersPage />} />
+        <Route
+          path="/orders/import"
+          element={
+            <RequireRole roles={['BOARD', 'ADMIN']} member={member}>
+              <ImportOrdersPage />
+            </RequireRole>
+          }
+        />
         <Route path="/deliveries" element={<DeliveriesPage />} />
         <Route path="/profile" element={<ProfilePage member={member} />} />
         <Route
@@ -101,6 +113,14 @@ function AuthGate() {
           element={
             <RequireRole roles={['BOARD', 'ADMIN']} member={member}>
               <InventoryPage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/inventory/import"
+          element={
+            <RequireRole roles={['BOARD', 'ADMIN']} member={member}>
+              <ImportInventoryPage />
             </RequireRole>
           }
         />

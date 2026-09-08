@@ -2,7 +2,7 @@ import { collection, doc, getDocs, orderBy, query, serverTimestamp, setDoc, upda
 import { db } from '../firebase/config'
 import type { InventoryCategory, InventoryItem, InventoryUnit } from './types'
 
-function inventoryCollection(seasonId: string) {
+export function inventoryCollection(seasonId: string) {
   return collection(db, 'seasons', seasonId, 'inventory')
 }
 

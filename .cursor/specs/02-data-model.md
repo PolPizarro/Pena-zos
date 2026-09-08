@@ -135,6 +135,8 @@ Season
  ├── Product
  |
  ├── Order
+ │     |
+ │     └── OrderItem
  |
  ├── Delivery
  │     |
@@ -278,10 +280,13 @@ Season
     startDate
     endDate
     status
+    ordersOpen
     createdAt
     updatedAt
 }
 ```
+
+`ordersOpen` (boolean) lets the board open/close member ordering independently of `status` — see 10-orders.md §9a.
 
 ---
 
@@ -636,6 +641,7 @@ Product
     seasonId
     name
     description
+    price
     requiresSize
     active
     createdAt
@@ -643,12 +649,15 @@ Product
 }
 ```
 
+`price` is a positive number, in euros, matching the plain-number money convention used elsewhere (`guestCost` in §8, `FinancialMovement.amount` in §21).
+
 ---
 
 ## Rules
 
 - Products belong to a season.
 - Products can change between editions.
+- `price` must be greater than or equal to zero.
 
 ---
 
@@ -656,7 +665,7 @@ Product
 
 ## Purpose
 
-Represents a product order made by a member.
+Represents one purchase made by a member: a single checkout, which can bundle several products (10-orders.md §2).
 
 ---
 
@@ -668,14 +677,20 @@ Order
     id
     seasonId
     memberId
-    productId
-    size
-    quantity
+    source
+    totalCost
     paymentStatus
+    cancelled
     createdAt
     updatedAt
 }
 ```
+
+`totalCost` is the sum of `lineTotal` across the order's `OrderItem`s (denormalized, see §17a).
+
+`source` is `MEMBER` or `IMPORT` — distinguishes an order a member built themselves from one created by the board's bulk import, so re-importing a corrected file can safely find and replace only its own prior orders (10-orders.md §15).
+
+`cancelled` (boolean, default `false`) is a soft delete, per 10-orders.md §4.
 
 ---
 
@@ -694,9 +709,51 @@ NOT_REQUIRED
 ## Rules
 
 - An order belongs to one season.
-- An order references one product.
+- An order belongs to one member.
 - Members can create their own orders.
 - Board manages order administration.
+
+---
+
+# 17a. Order Item
+
+## Purpose
+
+Represents one product line within an Order: a product, a size, and a quantity (10-orders.md §4a).
+
+---
+
+## Attributes
+
+```
+OrderItem
+{
+    id
+    orderId
+    memberId
+    productId
+    size
+    quantity
+    unitPrice
+    lineTotal
+    createdAt
+    updatedAt
+}
+```
+
+`memberId` is a denormalized copy of the parent Order's `memberId`, mirroring the `Task.assignedMemberIds` pattern in §9, so Security Rules can check ownership without an extra read.
+
+`unitPrice` is a copy of the Product's `price` at the time the item was added — historical preservation, since a product's price can change between orders.
+
+`lineTotal` is `unitPrice × quantity`.
+
+---
+
+## Rules
+
+- An OrderItem belongs to one Order and references one product.
+- Quantity must be greater than zero.
+- Items can be added, changed, or removed by their owning member while the Order's `paymentStatus` is `PENDING`.
 
 ---
 
@@ -878,6 +935,7 @@ EXPENSE
 | Poll | Board |
 | Product | Board |
 | Order | Member / Board |
+| Order Item | Member / Board |
 | Inventory Item | Board |
 | Delivery | Board |
 | Financial Movement (Future) | Treasurer |

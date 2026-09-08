@@ -63,6 +63,13 @@ Represents the delivery process for one member during one season.
 
 A member can have one delivery package containing multiple items.
 
+The Orders board screen reuses this `status` as "has this member's order
+been delivered" to filter the order list (10-orders.md §12,
+19-ui-navigation.md §16a) — a package can technically hold non-order
+items too (vouchers, patches), but in practice it's driven by the
+member's order, so this is a reasonable proxy rather than a per-order
+delivery concept of its own.
+
 ---
 
 ## Attributes
@@ -136,11 +143,13 @@ DeliveryItem
     type
     quantity
     delivered
-    relatedOrderId
+    relatedOrderItemId
     createdAt
     updatedAt
 }
 ```
+
+`relatedOrderItemId` references a specific `OrderItem` (10-orders.md §4a), since one Order can bundle several products and delivery is tracked per product line.
 
 ---
 
@@ -199,10 +208,10 @@ Example:
 - T-shirt.
 - Sweatshirt.
 
-The original order can be referenced using:
+The originating order line can be referenced using:
 
 ```
-relatedOrderId
+relatedOrderItemId
 ```
 
 ---
@@ -224,11 +233,9 @@ A member creates:
 ```
 Order
 
-Product:
-Peña Zos Sweatshirt
-
-Quantity:
-1
+OrderItem:
+Product: Peña Zos Sweatshirt
+Quantity: 1
 ```
 
 Later:
@@ -243,7 +250,7 @@ Sweatshirt
 type:
 ORDER_PRODUCT
 
-relatedOrderId:
+relatedOrderItemId:
 12345
 ```
 

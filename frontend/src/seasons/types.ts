@@ -7,4 +7,5 @@ export interface Season {
   startDate: string
   endDate: string
   status: SeasonStatus
+  ordersOpen: boolean
 }

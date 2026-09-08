@@ -14,6 +14,7 @@ export async function listProducts(seasonId: string): Promise<Product[]> {
 export interface NewProductInput {
   name: string
   description: string
+  price: number
   requiresSize: boolean
 }
 
@@ -27,4 +28,8 @@ export async function createProduct(seasonId: string, input: NewProductInput) {
 // in the order-creation UI, since it's a business rule, not access control).
 export async function setProductActive(seasonId: string, productId: string, active: boolean) {
   await updateDoc(doc(productsCollection(seasonId), productId), { active, updatedAt: serverTimestamp() })
+}
+
+export async function setProductPrice(seasonId: string, productId: string, price: number) {
+  await updateDoc(doc(productsCollection(seasonId), productId), { price, updatedAt: serverTimestamp() })
 }

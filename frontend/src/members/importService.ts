@@ -32,7 +32,6 @@ export interface ImportRowResult {
   row: ImportRow
   status: 'created' | 'updated' | 'error'
   message?: string
-  temporaryPassword?: string
 }
 
 function cell(raw: Record<string, unknown>, ...keys: string[]): string {
@@ -69,11 +68,6 @@ export async function parseExcelFile(file: File): Promise<ImportRow[]> {
   })
 }
 
-function generateTemporaryPassword(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%'
-  return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
-}
-
 async function findMemberIdByDni(dni: string): Promise<string | null> {
   const snapshot = await getDocs(query(collection(db, 'members'), where('dni', '==', dni), limit(1)))
   const [firstDoc] = snapshot.docs
@@ -82,10 +76,12 @@ async function findMemberIdByDni(dni: string): Promise<string | null> {
 
 // Creates the Firebase Auth account via the secondary app instance, then
 // writes the User document through the primary (admin-authenticated) app.
-async function createAccount(memberId: string, email: string): Promise<string> {
-  const temporaryPassword = generateTemporaryPassword()
+// 16-authentication.md §7: login uses email, but the temporary password is
+// the member's own DNI, a deliberate simplicity trade-off — access is
+// blocked by mustChangePassword until the member sets their real password.
+async function createAccount(memberId: string, email: string, dni: string): Promise<void> {
   const secondaryAuth = getSecondaryAuth()
-  const credential = await createUserWithEmailAndPassword(secondaryAuth, email, temporaryPassword)
+  const credential = await createUserWithEmailAndPassword(secondaryAuth, email, dni)
   await signOut(secondaryAuth)
 
   await setDoc(doc(db, 'users', credential.user.uid), {
@@ -94,8 +90,6 @@ async function createAccount(memberId: string, email: string): Promise<string> {
     email,
     mustChangePassword: true,
   })
-
-  return temporaryPassword
 }
 
 export async function importMembers(rows: ImportRow[]): Promise<ImportRowResult[]> {
@@ -137,10 +131,10 @@ export async function importMembers(rows: ImportRow[]): Promise<ImportRowResult[
         updatedAt: serverTimestamp(),
       })
 
-      const temporaryPassword = await createAccount(newMemberRef.id, row.email)
+      await createAccount(newMemberRef.id, row.email, row.dni)
       await updateDoc(newMemberRef, { status: 'ACTIVE' })
 
-      results.push({ row, status: 'created', temporaryPassword })
+      results.push({ row, status: 'created' })
     } catch (error) {
       results.push({
         row,

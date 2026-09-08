@@ -37,10 +37,18 @@ export async function createSeason(input: NewSeasonInput) {
   await setDoc(ref, {
     ...input,
     status: 'PLANNING',
+    ordersOpen: true,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   })
   return ref.id
+}
+
+// 10-orders.md §16: lets the board close ordering (e.g. once orders move
+// into the delivery-preparation phase) without affecting the rest of the
+// active season. Independent from `status`.
+export async function setOrdersOpen(seasonId: string, ordersOpen: boolean) {
+  await updateDoc(doc(db, 'seasons', seasonId), { ordersOpen, updatedAt: serverTimestamp() })
 }
 
 // 14-seasons.md §7: only one season may be ACTIVE at a time. Activating a

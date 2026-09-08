@@ -15,5 +15,5 @@ export interface DeliveryItem {
   type: DeliveryItemType
   quantity: number
   delivered: boolean
-  relatedOrderId: string | null
+  relatedOrderItemId: string | null
 }

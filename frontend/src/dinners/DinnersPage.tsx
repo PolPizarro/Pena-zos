@@ -93,6 +93,10 @@ export function DinnersPage() {
   if (loading) return <p>Cargando...</p>
   if (!season) return <p>No hay ninguna temporada activa.</p>
 
+  // "Eliminar" is a soft delete: the dinner is marked CANCELLED and hidden
+  // here, but preserved in Firestore (02-data-model.md §23).
+  const visibleDinners = dinners.filter((dinner) => dinner.status !== 'CANCELLED')
+
   return (
     <main>
       <h1>Cenas — {season.name}</h1>
@@ -135,10 +139,10 @@ export function DinnersPage() {
         </form>
       )}
 
-      {dinners.length === 0 && <p>No hay cenas.</p>}
+      {visibleDinners.length === 0 && <p>No hay cenas.</p>}
 
       <ul>
-        {dinners.map((dinner) => (
+        {visibleDinners.map((dinner) => (
           <li key={dinner.id}>
             <strong>{dinner.name}</strong> — {dinner.date} {dinner.time}
             {dinner.location && ` — ${dinner.location}`}
@@ -166,9 +170,9 @@ export function DinnersPage() {
                     Marcar completada
                   </button>
                 )}
-                {dinner.status !== 'COMPLETED' && dinner.status !== 'CANCELLED' && (
+                {dinner.status !== 'COMPLETED' && (
                   <button type="button" onClick={() => handleStatusChange(dinner.id, 'CANCELLED')}>
-                    Cancelar
+                    Eliminar
                   </button>
                 )}
 

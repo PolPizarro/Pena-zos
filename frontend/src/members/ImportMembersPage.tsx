@@ -34,8 +34,8 @@ export function ImportMembersPage() {
       </p>
       <p>
         Los miembros existentes se identifican por <strong>DNI</strong> y se actualizan (nombre,
-        email, roles). Los nuevos reciben una cuenta con contraseña temporal — apúntala ahora, no se
-        volverá a mostrar.
+        email, roles). Los nuevos reciben una cuenta cuya contraseña temporal es su propio DNI —
+        se les pedirá cambiarla al entrar por primera vez.
       </p>
 
       <input type="file" accept=".xlsx,.xls" onChange={handleFileChange} disabled={processing} />
@@ -50,7 +50,6 @@ export function ImportMembersPage() {
               <th>Nombre</th>
               <th>DNI</th>
               <th>Resultado</th>
-              <th>Contraseña temporal</th>
             </tr>
           </thead>
           <tbody>
@@ -61,11 +60,10 @@ export function ImportMembersPage() {
                 </td>
                 <td>{result.row.dni}</td>
                 <td>
-                  {result.status === 'created' && 'Creado'}
+                  {result.status === 'created' && 'Creado (contraseña temporal = su DNI)'}
                   {result.status === 'updated' && 'Actualizado'}
                   {result.status === 'error' && `Error: ${result.message}`}
                 </td>
-                <td>{result.temporaryPassword ?? '—'}</td>
               </tr>
             ))}
           </tbody>

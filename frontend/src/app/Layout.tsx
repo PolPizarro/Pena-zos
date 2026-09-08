@@ -54,9 +54,17 @@ export function Layout({ member }: { member: Member }) {
           <NavLink to="/polls" onClick={closeMenu}>
             Encuestas
           </NavLink>
+          <NavLink to="/products" onClick={closeMenu}>
+            Productos
+          </NavLink>
           <NavLink to="/orders" onClick={closeMenu}>
             Pedidos
           </NavLink>
+          {(roles.includes('BOARD') || roles.includes('ADMIN')) && (
+            <NavLink to="/orders/import" onClick={closeMenu}>
+              Importar pedidos
+            </NavLink>
+          )}
           <NavLink to="/deliveries" onClick={closeMenu}>
             Entregas
           </NavLink>
@@ -71,6 +79,11 @@ export function Layout({ member }: { member: Member }) {
           {(roles.includes('BOARD') || roles.includes('ADMIN')) && (
             <NavLink to="/inventory" onClick={closeMenu}>
               Inventario
+            </NavLink>
+          )}
+          {(roles.includes('BOARD') || roles.includes('ADMIN')) && (
+            <NavLink to="/inventory/import" onClick={closeMenu}>
+              Importar inventario
             </NavLink>
           )}
           {(roles.includes('BOARD') || roles.includes('TREASURER') || roles.includes('ADMIN')) && (

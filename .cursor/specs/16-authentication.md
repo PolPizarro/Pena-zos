@@ -172,11 +172,13 @@ status: ACTIVE
 
 When users are imported:
 
-- A temporary password is generated.
+- The temporary password is the member's own DNI. This is a deliberate simplicity trade-off: it avoids having to separately communicate a random password to each member. The exposure window is limited because `mustChangePassword` blocks all application access until the member sets their own password (§8-9).
 - The user receives access information by email.
 - The user receives a WhatsApp notification informing that the application is available.
 
-The temporary password must not be stored in Firestore.
+The temporary password must not be stored in Firestore (it is derivable from the `dni` field already on the `Member` document, so no separate storage is needed or allowed).
+
+Login itself always uses the member's email as the username (Firebase Authentication identifies accounts by email) — only the initial password value is the DNI, not the login identifier.
 
 ---
 

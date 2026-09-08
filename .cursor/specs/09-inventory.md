@@ -310,7 +310,37 @@ Update:
 
 ---
 
-# 15. Future Improvements
+# 15. Bulk Import
+
+The board can import inventory items from an Excel file, for the active Season.
+
+The import process creates or updates inventory items.
+
+The import file contains, per row:
+
+* Nombre (name).
+* Descripcion (description).
+* Cantidad (quantity).
+* Fecha actualizacion (last updated date).
+
+`Nombre` is required and is the key used to match a row to an existing inventory item within the active Season on re-import.
+
+The import process must:
+
+* Avoid duplicate items (match by Nombre, within the active Season).
+* Update existing items when a match is found (description, quantity, updated date).
+* Create new items when no match is found.
+* Reject rows with a missing name or a negative/invalid quantity.
+
+New items created via import default to category `OTHER`, unit `UNITS` and status `AVAILABLE`. The board can refine these afterwards from the Inventory page.
+
+`Fecha actualizacion`, when present and parseable, is stored as the item's `updatedAt` — this lets the board preserve the last-known update date from a prior manual tracking sheet instead of resetting it to the import time.
+
+Only BOARD and ADMIN can import inventory, matching inventory management permissions (§12).
+
+---
+
+# 16. Future Improvements
 
 Possible future features:
 

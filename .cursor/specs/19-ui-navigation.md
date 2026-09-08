@@ -40,6 +40,7 @@ Common navigation:
 - Activities.
 - Events.
 - Polls.
+- Products.
 - Orders.
 - Deliveries.
 
@@ -110,6 +111,7 @@ Users with MEMBER role can access:
 - Activities.
 - Events.
 - Polls.
+- Products.
 - Orders.
 - Deliveries.
 
@@ -275,21 +277,43 @@ Board view:
 
 ---
 
-# 16. Orders Screen
+# 16. Products Screen
+
+The products section shows the items available for order during the
+active season (10-orders.md §3). It is a separate screen from Orders
+(§16a) so each concern has its own tab, per 18-application-architecture.md.
+
+Member view:
+
+- View available products, including price.
+
+Board view:
+
+- Create products.
+- Modify products.
+- Activate or deactivate products.
+
+---
+
+# 16a. Orders Screen
 
 The orders section manages product requests.
 
 Member view:
 
-- View available products.
 - Create orders.
-- View own orders.
+- View own orders only — never other members' orders (10-orders.md §8, 17-security-rules.md §13).
 
 Board view:
 
-- Manage products.
 - Review all orders.
+- Search orders by member name.
+- Filter orders by delivery status — already-delivered orders are hidden
+  by default, so the list stays focused on what's still pending; a "todos
+  los estados" option shows everything (10-orders.md §12).
 - Prepare deliveries.
+
+`10-orders.md §15` (bulk import) is reachable from this screen, board/admin only.
 
 ---
 

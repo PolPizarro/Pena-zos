@@ -4,6 +4,7 @@ import type { Member } from '../auth/types'
 import { listMembers } from '../members/membersService'
 import { getActiveSeason } from '../seasons/seasonsService'
 import type { Season } from '../seasons/types'
+import { SearchableSelect } from '../shared/SearchableSelect'
 import {
   assignMember,
   cancelTask,
@@ -136,19 +137,24 @@ export function TasksPage() {
     }
   }
 
-  async function handleCancel(taskId: string) {
+  // "Eliminar" is a soft delete: the task is marked CANCELLED (05-tasks.md
+  // already defines this status) and hidden from the lists below, but the
+  // record is preserved in Firestore per 02-data-model.md §23.
+  async function handleDelete(taskId: string) {
     if (!season) return
     setError(null)
     try {
       await cancelTask(season.id, taskId)
       await refresh()
     } catch {
-      setError('No se ha podido cancelar la tarea.')
+      setError('No se ha podido eliminar la tarea.')
     }
   }
 
   if (loading) return <p>Cargando...</p>
   if (!season) return <p>No hay ninguna temporada activa.</p>
+
+  const visibleTasks = tasks.filter((task) => task.status !== 'CANCELLED')
 
   return (
     <main>
@@ -185,13 +191,12 @@ export function TasksPage() {
           </label>
           <label>
             Tipo
-            <select value={type} onChange={(event) => setType(event.target.value as TaskType)}>
-              {TASK_TYPES.map((taskType) => (
-                <option key={taskType} value={taskType}>
-                  {taskType}
-                </option>
-              ))}
-            </select>
+            <SearchableSelect
+              options={TASK_TYPES.map((taskType) => ({ value: taskType, label: taskType }))}
+              value={type}
+              onChange={(value) => setType(value as TaskType)}
+              placeholder="Elige un tipo..."
+            />
           </label>
           <button type="submit" disabled={submitting}>
             {submitting ? 'Creando...' : 'Crear tarea'}
@@ -199,10 +204,10 @@ export function TasksPage() {
         </form>
       )}
 
-      {tasks.length === 0 && <p>{canManage ? 'No hay tareas.' : 'No tienes tareas asignadas.'}</p>}
+      {visibleTasks.length === 0 && <p>{canManage ? 'No hay tareas.' : 'No tienes tareas asignadas.'}</p>}
 
       <ul>
-        {tasks.map((task) => (
+        {visibleTasks.map((task) => (
           <li key={task.id}>
             <strong>{task.title}</strong> — {task.date} {task.time} ({task.type})
             {task.description && <p>{task.description}</p>}
@@ -215,28 +220,16 @@ export function TasksPage() {
                 : task.assignedMemberIds.map((memberId) => memberName(memberId)).join(', ')}
             </p>
 
-            {canManage && task.status !== 'COMPLETED' && task.status !== 'CANCELLED' && (
+            {canManage && task.status !== 'COMPLETED' && (
               <>
-                <select
-                  defaultValue=""
-                  onChange={(event) => {
-                    if (event.target.value) {
-                      handleAssign(task, event.target.value)
-                      event.target.value = ''
-                    }
-                  }}
-                >
-                  <option value="" disabled>
-                    Asignar miembro...
-                  </option>
-                  {members
+                <SearchableSelect
+                  options={members
                     .filter((candidate) => !task.assignedMemberIds.includes(candidate.id))
-                    .map((candidate) => (
-                      <option key={candidate.id} value={candidate.id}>
-                        {candidate.fullName}
-                      </option>
-                    ))}
-                </select>
+                    .map((candidate) => ({ value: candidate.id, label: candidate.fullName }))}
+                  value=""
+                  onChange={(memberId) => handleAssign(task, memberId)}
+                  placeholder="Asignar miembro..."
+                />
 
                 {task.assignedMemberIds.map((memberId) => (
                   <button key={memberId} type="button" onClick={() => handleRemoveAssignment(task, memberId)}>
@@ -247,8 +240,8 @@ export function TasksPage() {
                 <button type="button" onClick={() => handleComplete(task.id)}>
                   Marcar completada
                 </button>
-                <button type="button" onClick={() => handleCancel(task.id)}>
-                  Cancelar
+                <button type="button" onClick={() => handleDelete(task.id)}>
+                  Eliminar
                 </button>
               </>
             )}

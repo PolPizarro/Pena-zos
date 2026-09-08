@@ -135,9 +135,12 @@ Entity:
         startDate
         endDate
         status
+        ordersOpen
         createdAt
         updatedAt
     }
+
+`ordersOpen` (boolean) controls member ordering independently of `status` — a season stays ACTIVE the whole time (calendar, tasks, deliveries keep working), but the board can close ordering on its own once the ordering window is over, e.g. when moving into delivery preparation. See 10-orders.md §9a.
 
 ---
 
